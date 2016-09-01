@@ -15,8 +15,8 @@ const float ZOOM = 64.0;
 
 void main() {
   vec3 cameraPos = vec3(0.0, -DIST, DIST);
-  vec3 z = normalize(vec3( 0.0, DIST, -DIST ));
-  vec3 y = normalize(vec3( 0.0, DIST, DIST ));
+  vec3 z = normalize(vec3( 0.0, DIST + DIST * .5 * cos(uniTime * .001), -DIST ));
+  vec3 y = vec3( 0.0, -z.z, z.y );
   vec3 x = vec3(1.0, 0.0, 0.0);
   mat4 cameraMat = mat4(x.x, x.y, x.z, -cameraPos.x,
                         y.x, y.y, y.z, -cameraPos.y,
