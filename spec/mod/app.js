@@ -1,0 +1,2 @@
+require("app",function(e,r){function n(){return i(t,arguments)}var t={en:{}},i=require("$").intl,a=require("tfw.webgl"),d=require("world");e.start=function(){var e=document.createElement("canvas");document.body.appendChild(e);var r=new a.Renderer(e),n=new d(r.gl);n.loadTerrain("main"),r.start(function(r){var t=e.clientWidth,i=e.clientHeight;e.width=t,e.height=i,n.render(r,t,i)})},r.exports._=n});
+//# sourceMappingURL=app.js.map
