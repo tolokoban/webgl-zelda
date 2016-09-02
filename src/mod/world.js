@@ -2,6 +2,7 @@
 
 var Levels = require("levels");
 var WebGL = require("tfw.webgl");
+var Edges = require("world.terrain.edges");
 
 
 var World = function(gl) {
@@ -17,6 +18,8 @@ var World = function(gl) {
     this.lookPhi = Math.PI / 4;
     // Rho est la distance de la caméra au point regardé.
     this.lookRho = 10;
+
+    this.worldTerrainEdges = new Edges( gl );
 };
 
 
@@ -24,14 +27,16 @@ var World = function(gl) {
  * @return void
  */
 World.prototype.loadTerrain = function( id ) {
+    this.worldTerrainEdges.loadTerrain( id );
+
     var r0 = 0;
-    var g0 = .5;
+    var g0 = .3;
     var b0 = 0;
-    var r1 = .6;
-    var g1 = .3;
+    var r1 = .4;
+    var g1 = .2;
     var b1 = 0;
-    var r2 = .4;
-    var g2 = .2;
+    var r2 = .3;
+    var g2 = .15;
     var b2 = 0;
 
     var arr = [];
@@ -70,7 +75,7 @@ World.prototype.loadTerrain = function( id ) {
                     x + 0, y + 1, z,
                     x + 0, y + 1, -2,
                     x + 1, y + 1, -2,
-                    1, 0, 0
+                    r1, g1, b1
                 ],
                 // Left
                 [
@@ -86,7 +91,7 @@ World.prototype.loadTerrain = function( id ) {
                     x + 1, y + 0, z,
                     x + 1, y + 1, z,                   
                     x + 1, y + 1, -2,
-                    .5, .5, b2
+                    r2, g2, b2
                 ]
             ));
         });
@@ -153,6 +158,15 @@ function renderTerrainFaces( time, w, h ) {
     // Lancer le dessin du triangle composé de 3 points.
     gl.drawArrays(gl.TRIANGLES, 0, this._arrAttributes.length / 6);
 
+
+    this.worldTerrainEdges.lookX = this.lookX;
+    this.worldTerrainEdges.lookY = this.lookY;
+    this.worldTerrainEdges.lookZ = this.lookZ;
+    this.worldTerrainEdges.lookTheta = this.lookTheta;
+    this.worldTerrainEdges.lookPhi = this.lookPhi;
+    this.worldTerrainEdges.lookRho = this.lookRho;
+
+    this.worldTerrainEdges.render( time, w, h );
 }
 
 
