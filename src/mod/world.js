@@ -18,36 +18,50 @@ var World = function(gl) {
  * @return void
  */
 World.prototype.loadTerrain = function( id ) {
-    var arr = quads(
-        [
-            0, 0, 1,
-            0, 1, 1,
-            1, 1, 1,
-            1, 0, 1,
-            .3, .5, 0
-        ],
-        [
-            0, 0, 1,
-            1, 0, 1,
-            1, 0, 0,
-            0, 0, 0,
-            .6, 0, 0
-        ],
-        [
-            1, 1, 1,
-            2, 1, 1,
-            2, 1, 0,
-            1, 1, 0,
-            .5, 0, 0
-        ],
-        [
-            0, 1, 1,
-            0, 3, 1,
-            2, 3, 1,
-            2, 1, 1,
-            .5, .8, 0
-        ]
-    );
+    var r0 = 0;
+    var g0 = 1;
+    var b0 = 0;
+    var r1 = .8;
+    var g1 = .4;
+    var b1 = 0;
+    var r2 = .4;
+    var g2 = .2;
+    var b2 = 0;
+    
+    var arr = [];
+    var alti = Levels[id].alti;
+
+    alti.forEach(function (row, y) {
+        row.forEach(function (z, x) {
+            if ( z < 0 ) return;
+            arr = arr.concat(quads(
+                // Top
+                [
+                    x + 0, y + 0, z,
+                    x + 0, y + 1, z,
+                    x + 1, y + 1, z,
+                    x + 1, y + 0, z,
+                    r0, g0, b0
+                ],
+                // Front
+                [
+                    x + 0, y + 0, z,
+                    x + 1, y + 0, z,
+                    x + 1, y + 0, -1,
+                    x + 0, y + 0, -1,
+                    r1, g1, b1
+                ],
+                // Left
+                [
+                    x + 0, y + 0, z,
+                    x + 0, y + 0, -1,
+                    x + 0, y + 1, -1,
+                    x + 0, y + 1, z,
+                    r2, g2, b2
+                ]
+            ));
+        });
+    });
 
     this._arrAttributes = new Float32Array( arr );
     this._bufAttributes = this._gl.createBuffer();
