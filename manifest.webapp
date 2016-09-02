@@ -1,0 +1,14 @@
+{
+  "launch_path": "/index.html",
+  "developer": {
+    "name": "tolokoban",
+    "url": "https://github.com/tolokoban/webgl-zelda"
+  },
+  "icons": {
+    "128": "/icon-128.png",
+    "512": "/icon-512.png"
+  },
+  "name": "webgl-zelda",
+  "version": "0.0.1",
+  "description": "A webgl clone of an old version of Zelda"
+}
