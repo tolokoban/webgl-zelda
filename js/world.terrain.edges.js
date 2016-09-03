@@ -1,4 +1,5 @@
-/** @module world.terrain.edges */require( 'world.terrain.edges', function(exports, module) { var _=function(){return ''}; "use strict";
+/** @module world.terrain.edges */require( 'world.terrain.edges', function(exports, module) { var _intl_={"en":{}},_$=require("$").intl;function _(){return _$(_intl_, arguments);}
+ "use strict";
 
 var Levels = require("levels");
 var WebGL = require("tfw.webgl");
@@ -106,6 +107,7 @@ var GLOBAL = {
 module.exports._ = _;
 /**
  * @module world.terrain.edges
+ * @see module:$
  * @see module:levels
  * @see module:tfw.webgl
  * @see module:world.terrain.edges

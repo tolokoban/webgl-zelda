@@ -6,7 +6,7 @@
     major:0,
     minor:0,
     revision:1,
-    date:new Date(2016,8,1,22,0,28)
+    date:new Date(2016,8,3,10,1,38)
 };
 var currentLang = null;
 exports.lang = function(lang) {
