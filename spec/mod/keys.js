@@ -1,0 +1,2 @@
+require("keys",function(e,n){function t(){return r(o,arguments)}var o={en:{}},r=require("$").intl,u=[];document.addEventListener("keydown",function(e){u[e.keyCode]=!0,console.log(e.keyCode)}),document.addEventListener("keyup",function(e){u[e.keyCode]=!1}),e.test=function(e){return u[e]},n.exports._=t});
+//# sourceMappingURL=keys.js.map

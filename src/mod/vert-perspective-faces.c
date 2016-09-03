@@ -10,20 +10,24 @@ uniform float uniLookRho;
 
 attribute vec3 attPosition;
 attribute vec3 attColor;
+attribute float attThreshold;
 
 varying vec3 varColor;
 varying float varHeight;
+varying float varThreshold;
 
-const float DEPTH = 27.0;
-const float DIST = 50.0;
-const float ZOOM = 64.0;
+const float DEPTH = 270.0;
+const float ZOOM = 100000.0;
 
 const float PI = 3.141592653589793;
   
 void main() {
-  float theta = uniTime * 0.00012 * PI;
-  float phi = (1.0 + sin(uniTime * 0.000842)) * .1 * PI;
-  float rho = 50.0;
+  float theta = uniLookTheta;
+  float phi = uniLookPhi;
+  float rho = uniLookRho;
+  float lookX = uniLookX;
+  float lookY = uniLookY;
+  float lookZ = uniLookZ;
 
   float cosPhi = cos(phi);      // 1
   float sinPhi = sin(phi);      // 0
@@ -38,26 +42,22 @@ void main() {
   vec3 camVX = vec3(sinTheta, -cosTheta, 0);  // (0,-1,0)
   vec3 camVY = cross(camVZ, camVX);           // (0,0,1)
 
-  camX = camX * rho + uniLookX;
-  camY = camY * rho + uniLookY;
-  camZ = camZ * rho + uniLookZ;
+  camX = camX * rho + lookX;
+  camY = camY * rho + lookY;
+  camZ = camZ * rho + lookZ;
 
-  camX = -0.0;
-  camY = -0.0;
-  camZ = -0.0;
-  
-  mat4 cameraMat = mat4(camVX.x, camVY.x, camVZ.x, 0.0,
-                        camVX.y, camVY.y, camVZ.y, 0.0,
-                        camVX.z, camVY.z, camVZ.z, 0.0,
-                        -camX,     -camY,   -camZ, 1.0);
+  mat3 cameraMat = mat3(camVX.x, camVY.x, camVZ.x,
+                        camVX.y, camVY.y, camVZ.y,
+                        camVX.z, camVY.z, camVZ.z);
 
-  vec4 pos = cameraMat * vec4(attPosition - vec3(uniLookX, uniLookY, uniLookZ), 1.0);
+  vec3 pos = cameraMat * (attPosition - vec3(camX, camY, camZ));
   float zz = pos.z;
   float xx = pos.x / uniWidth;
   float yy = pos.y / uniHeight;
-  float w = ZOOM * DEPTH / (DEPTH + zz);
+  float w = ZOOM / (rho * (DEPTH + zz));
   gl_Position = vec4(xx * w, yy * w, zz * 0.001, 1.0);
   
   varColor = attColor; 
   varHeight = attPosition.z;
+  varThreshold = attThreshold;
 }                

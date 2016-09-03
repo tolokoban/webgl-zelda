@@ -1,6 +1,0 @@
-{
-    "var": {
-        "vert-perspective": "vert-perspective.c",
-        "frag-unicolor": "frag-unicolor.c"
-    }
-}

@@ -1,5 +1,7 @@
 "use strict";
 
+var Message = require("tfw.message");
+
 
 var Renderer = function(canvas) {
     Object.defineProperty( this, 'canvas', {
@@ -15,8 +17,7 @@ var Renderer = function(canvas) {
         enumerable: true
     });
 
-    this.render = function() {};
-    
+    this.render = function() {};    
 };
 
 Renderer.prototype.start = function(renderingFunction) {
@@ -26,15 +27,19 @@ Renderer.prototype.start = function(renderingFunction) {
 
     if (!this._animationIsOn) {
         var that = this;
+        var lastTime = 0;
         var rendering = function(time) {
             if (that._animationIsOn) {
                 window.requestAnimationFrame( rendering );
             }
-            that.render( time );
+            that.render( time, time - lastTime );
+            lastTime = time;
         };
         window.requestAnimationFrame( rendering );
         this._animationIsOn = true;
     }
+
+    Message.info( "<html>Utilisez les <b>flèches</b> pour changer l'angle de la <b>caméra</b>.<br/>Et <b>+ et -</b> pour zoomer.");
 };
 
 Renderer.prototype.stop = function() {

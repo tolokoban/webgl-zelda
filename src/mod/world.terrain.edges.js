@@ -95,5 +95,4 @@ Edges.prototype.render = function( time, w, h ) {
 };
 
 
-
 module.exports = Edges;

@@ -16,13 +16,13 @@ exports.start = function() {
     var renderer = new WebGL.Renderer( canvas );
     var world = new World( renderer.gl );
 
-    renderer.start(function( time ) {
+    renderer.start(function( time, delta ) {
         var w = canvas.clientWidth;
         var h = canvas.clientHeight;
         canvas.width = w;
         canvas.height = h;
 
-        world.render( time, w, h );
+        world.render( time, delta, w, h );
     });
 
     var ids = [], content = {};
