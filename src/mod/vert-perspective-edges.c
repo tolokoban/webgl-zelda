@@ -53,4 +53,5 @@ void main() {
   float yy = pos.y / uniHeight;
   float w = ZOOM * DEPTH / (DEPTH + zz);
   gl_Position = vec4(xx * w, yy * w, zz * 0.001, 1.0);
+  gl_PointSize = 3.0;
 }                

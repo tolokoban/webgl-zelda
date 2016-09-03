@@ -1,7 +1,12 @@
 "use strict";
 
+var $ = require("dom");
+var DB = require("tfw.data-binding");
 var WebGL = require("tfw.webgl");
 var World = require("world");
+var Combo = require("wdg.combo");
+var Levels = require("levels");
+
 
 
 exports.start = function() {
@@ -10,7 +15,6 @@ exports.start = function() {
 
     var renderer = new WebGL.Renderer( canvas );
     var world = new World( renderer.gl );
-    world.loadTerrain( 'main' );
 
     renderer.start(function( time ) {
         var w = canvas.clientWidth;
@@ -20,4 +24,18 @@ exports.start = function() {
 
         world.render( time, w, h );
     });
+
+    var ids = [], content = {};
+    for (var id in Levels) {
+        if (id == '_') continue;
+        ids.push(id);
+        content[id] = id;
+    }
+    ids.sort();
+    var cbo = new Combo({ label: "Niveau", content: content, wide: false });
+    DB.bind(cbo, 'value', function(v) {
+        world.loadTerrain(v);
+    });
+    cbo.value = ids[0];
+    $.add( document.body, cbo );
 };

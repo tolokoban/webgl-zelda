@@ -1,0 +1,2 @@
+require("polyfill.string",function(r,t){function n(){return i(e,arguments)}var e={en:{}},i=require("$").intl;"function"!=typeof String.toLowerCase&&(String.toLowerCase=function(r){return r.toLowerCase()},String.toUpperCase=function(r){return r.toUpperCase()},String.trim=function(r){return r.trim()}),t.exports._=n});
+//# sourceMappingURL=polyfill.string.js.map
