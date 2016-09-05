@@ -4,7 +4,7 @@
 var Levels = require("levels");
 var WebGL = require("tfw.webgl");
 var Faces = require("world.terrain.faces");
-var Edges = require("world.terrain.edges");
+var Water = require("world.terrain.water");
 var Keys = require("keys");
 
 
@@ -20,7 +20,7 @@ var World = function(gl) {
     this.lookRho = 10;
 
     this.worldTerrainFaces = new Faces( gl );
-    this.worldTerrainEdges = new Edges( gl );
+    this.worldTerrainWater = new Water( gl );
 };
 
 
@@ -36,7 +36,7 @@ World.prototype.loadTerrain = function( id ) {
     this.lookZ = terrain[Math.floor(this.lookY)][Math.floor(this.lookX)];
 
     this.worldTerrainFaces.loadTerrain( id );
-    this.worldTerrainEdges.loadTerrain( id );
+    this.worldTerrainWater.loadTerrain( id );
 };
 
 
@@ -75,7 +75,7 @@ World.prototype.render = function( time, delta, w, h ) {
     gl.clearColor(0.0, 0.0, 1.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    [this.worldTerrainFaces/*, this.worldTerrainEdges*/].forEach(function (worldPart) {
+    [this.worldTerrainFaces, this.worldTerrainWater].forEach(function (worldPart) {
         VARS.forEach(function (name) {
             worldPart[name] = that[name];
         });
@@ -98,8 +98,8 @@ module.exports._ = _;
  * @see module:levels
  * @see module:tfw.webgl
  * @see module:world
- * @see module:world.terrain.edges
  * @see module:world.terrain.faces
+ * @see module:world.terrain.water
 
  */
 });
