@@ -48,6 +48,8 @@ Renderer.prototype.stop = function() {
 
 
 function Program(gl, codes) {
+    this.gl = gl;
+
     var shaderProgram = gl.createProgram();
     gl.attachShader(shaderProgram, getVertexShader(gl, codes.vert || '//No Vertex Shader'));
     gl.attachShader(shaderProgram, getFragmentShader(gl, codes.frag || '//No Fragment Shader'));
@@ -65,9 +67,10 @@ function Program(gl, codes) {
     var attribs = {};
     var attribsCount = gl.getProgramParameter(shaderProgram, gl.ACTIVE_ATTRIBUTES);
     for (index = 0; index < attribsCount; index++) {
-        item = gl.getActiveAttrib( shaderProgram, index );
+        item = expandItem(gl, gl.getActiveAttrib( shaderProgram, index ));
         attribs[item.name] = gl.getAttribLocation(shaderProgram, item.name);
         this['$' + item.name] = gl.getAttribLocation(shaderProgram, item.name);
+        this['_$' + item.name] = item;
     }
 
     Object.freeze(attribs);
@@ -75,7 +78,7 @@ function Program(gl, codes) {
     var uniforms = {};
     var uniformsCount = gl.getProgramParameter(shaderProgram, gl.ACTIVE_UNIFORMS);
     for (index = 0; index < uniformsCount; index++) {
-        item = gl.getActiveUniform( shaderProgram, index );
+        item = expandItem(gl, gl.getActiveUniform( shaderProgram, index ));
         uniforms[item.name] = gl.getUniformLocation(shaderProgram, item.name);
         Object.defineProperty(this, '$' + item.name, {
             set: createUniformSetter(gl, item, uniforms[item.name]),
@@ -87,6 +90,57 @@ function Program(gl, codes) {
     Object.freeze(uniforms);
     this.uniforms = uniforms;
 }
+
+function expandItem(gl, item) {
+    item.dim = 1;
+    switch( item.type ) {
+        case gl.FLOAT_VEC2: item.dim = 2; break;
+        case gl.FLOAT_VEC3: item.dim = 3; break;
+        case gl.FLOAT_VEC4: item.dim = 4; break;
+        case gl.FLOAT_MAT2: item.dim = 4; break;
+        case gl.FLOAT_MAT3: item.dim = 9; break;
+        case gl.FLOAT_MAT4: item.dim = 16; break;
+    }
+
+    return item;
+}
+
+
+var Float32Array_BPE = (new Float32Array()).BYTES_PER_ELEMENT;
+
+/**
+ * @return void
+ */
+Program.prototype.enableVertexAttribFloat32Array = function() {
+    var size = 0;
+    var i, name, item;
+    for (i = 0 ; i < arguments.length ; i++) {
+        name = arguments[i];
+        item = this['_$' + name];
+        if( typeof item === 'undefined' ) {
+            console.log("Existing attribute are:", this.attribs);
+            throw Error('Attribute not defined: "' + name + '"!');
+        }
+        size += item.size * item.dim;
+    }
+
+    var offset = 0;
+    for (i = 0 ; i < arguments.length ; i++) {
+        name = arguments[i];
+        item = this['_$' + name];
+        this.gl.enableVertexAttribArray(this.attribs[name]);
+        this.gl.vertexAttribPointer(
+            this.attribs[name], 
+            item.size * item.dim, 
+            this.gl.FLOAT, 
+            false, 
+            size * Float32Array_BPE,
+            offset * Float32Array_BPE);
+        offset += item.size * item.dim;
+    }
+    return size;
+};
+
 
 function createUniformSetter(gl, item, nameGL) {
     var nameJS = '_$' + item.name;

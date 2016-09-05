@@ -4,28 +4,19 @@ var Levels = require("levels");
 var WebGL = require("tfw.webgl");
 
 
-var Edges = function( gl ) {
+var Water = function( gl ) {
     this._gl = gl;
     this._prg = new WebGL.Program(gl, {
-        vert: GLOBAL['vert-perspective'],
-        frag: GLOBAL['frag-unicolor']
+        vert: GLOBAL['vert'],
+        frag: GLOBAL['frag']
     });
-
 };
+
 
 /**
  * @return void
  */
-Edges.prototype.loadTerrain = function( id ) {
-    var r0 = 0;
-    var g0 = .3;
-    var b0 = 0;
-    var r1 = .4;
-    var g1 = .2;
-    var b1 = 0;
-    var r2 = .3;
-    var g2 = .15;
-    var b2 = 0;
+Water.prototype.loadTerrain = function( id ) {
 
     var arr = [];
     var alti = Levels[id].alti;
@@ -33,66 +24,7 @@ Edges.prototype.loadTerrain = function( id ) {
     var rows = alti.length;
     var cols = alti[0].length;
 
-    alti.forEach(function (row, y) {
-        row.forEach(function (z, x) {
-            if ( z < 0 ) return;
-            var zz;
-            // Top
-            arr = arr.concat(quad(
-                x + 0, y + 0, z,
-                x + 0, y + 1, z,
-                x + 1, y + 1, z,
-                x + 1, y + 0, z,
-                r0, g0, b0
-            ));
-            // Front
-            zz = height(alti, x, y - 1);
-            if (zz < z) {
-                arr = arr.concat(quad(
-                    x + 0, y + 0, z,
-                    x + 1, y + 0, z,
-                    x + 1, y + 0, zz,
-                    x + 0, y + 0, zz,
-                    r1, g1, b1
-                ));
-            }
-            // Back
-            zz = height(alti, x, y + 1);
-            if (zz < z) {
-                arr = arr.concat(quad(
-                    x + 1, y + 1, z,
-                    x + 0, y + 1, z,
-                    x + 0, y + 1, zz,
-                    x + 1, y + 1, zz,
-                    r1, g1, b1
-                ));
-            }
-            // Left
-            zz = height(alti, x - 1, y);
-            if (zz < z) {
-                arr = arr.concat(quad(
-                    x + 0, y + 0, z,
-                    x + 0, y + 0, zz,
-                    x + 0, y + 1, zz,
-                    x + 0, y + 1, z,
-                    r2, g2, b2
-                ));
-            }
-            // Right
-            zz = height(alti, x + 1, y);
-            if (zz < z) {
-                arr = arr.concat(quad(
-                    x + 1, y + 0, zz,
-                    x + 1, y + 0, z,
-                    x + 1, y + 1, z,
-                    x + 1, y + 1, zz,
-                    r2, g2, b2
-                ));
-            }
-        });
-    });
-
-    console.info("[world] arr.length / 6=...", arr.length / 6);
+    arr = disk(0, 0, 3000);
 
     this._arrAttributes = new Float32Array( arr );
     this._bufAttributes = this._gl.createBuffer();
@@ -102,21 +34,17 @@ Edges.prototype.loadTerrain = function( id ) {
 /**
  * @return void
  */
-Edges.prototype.render = function( time, w, h ) {
+Water.prototype.render = function( time, w, h ) {
     var gl = this._gl;
     var prg = this._prg;
     var bpe = this._arrAttributes.BYTES_PER_ELEMENT;
 
     prg.use();
 
-    // Ne pas afficher les faces qui nous tournent le dos.
-    gl.enable(gl.CULL_FACE);
-    gl.cullFace(gl.BACK);
-
     // Les uniforms.
     prg.$uniWidth = w;
     prg.$uniHeight = h;
-    prg.$uniTime = time;
+    prg.$uniTimeFrag = time;
     prg.$uniLookX = this.lookX;
     prg.$uniLookY = this.lookY;
     prg.$uniLookZ = this.lookZ;
@@ -129,17 +57,20 @@ Edges.prototype.render = function( time, w, h ) {
     // Copier des données dans le buffer actif.
     gl.bufferData(gl.ARRAY_BUFFER, this._arrAttributes, gl.STATIC_DRAW);
 
-    gl.enableVertexAttribArray(prg.attribs.attPosition);
-    gl.vertexAttribPointer(
-        prg.attribs.attPosition, 3, gl.FLOAT, false, 6 * bpe, 0);
-    gl.enableVertexAttribArray(prg.attribs.attColor);
-    gl.vertexAttribPointer(
-        prg.attribs.attColor, 3, gl.FLOAT, false, 6 * bpe, 3 * bpe);
+    var size = prg.enableVertexAttribFloat32Array(
+        'attPosition', 'attU', 'attV', 'attT'
+    );
 
     gl.enable(gl.DEPTH_TEST);
+    gl.enable(gl.BLEND);
+    gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ZERO, gl.ONE);
+    gl.blendEquation(gl.FUNC_ADD);
     // Lancer le dessin du triangle composé de 3 points.
-    gl.drawArrays(gl.TRIANGLES, 0, this._arrAttributes.length / 6);
+    gl.drawArrays(gl.TRIANGLES, 0, this._arrAttributes.length / size);
 
+    if (this._arrAttributes[5] + 1800 < time) {
+        disk2(this._arrAttributes, 0, 0, 0, time + Math.random() * 3000);
+    }
 };
 
 
@@ -153,34 +84,36 @@ function height(alti, x, y) {
 }
 
 
-
-function quad(x1, y1, z1,
-              x2, y2, z2,
-              x3, y3, z3,
-              x4, y4, z4,
-              r, g, b)
-{
+function disk(x, y, time) {
+    var r = 2;
+    var z = -1;
     return [
-        x1, y1, z1, r, g, b,
-        x2, y2, z2, r, g, b,
-        x3, y3, z3, r, g, b,
-        x1, y1, z1, r, g, b,
-        x3, y3, z3, r, g, b,
-        x4, y4, z4, r, g, b
+        // x,  y,     z,  u,  v, time
+        x - r, y - r, z, -1, -1, time,
+        x - r, y + r, z, -1, +1, time,
+        x + r, y + r, z, +1, +1, time,
+        x + r, y + r, z, +1, +1, time,
+        x + r, y - r, z, +1, -1, time,
+        x - r, y - r, z, -1, -1, time
     ];
 }
 
 
-function quads() {
-    var attributes = [];
-    var i, arg;
+function disk2(arr, offset, x, y, time) {
+    var r = 2;
+    var z = -1;
 
-    for (i = 0 ; i < arguments.length ; i++) {
-        arg = arguments[i];
-        attributes = attributes.concat(quad.apply(null, arg));
-    }
-    return attributes;
+    [
+        // x,  y,     z,  u,  v, time
+        x - r, y - r, z, -1, -1, time,
+        x - r, y + r, z, -1, +1, time,
+        x + r, y + r, z, +1, +1, time,
+        x + r, y + r, z, +1, +1, time,
+        x + r, y - r, z, +1, -1, time,
+        x - r, y - r, z, -1, -1, time
+    ].forEach(function (val, idx) {
+        arr[36 * offset + idx] = val;
+    });
 }
 
-
-module.exports = Edges;
+module.exports = Water;

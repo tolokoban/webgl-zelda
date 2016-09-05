@@ -1,0 +1,6 @@
+{
+    "var": {
+        "vert": "vert-perspective-water.c",
+        "frag": "frag-unicolor-water.c"
+    }
+}

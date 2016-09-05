@@ -127,6 +127,10 @@ Faces.prototype.render = function( time, w, h ) {
     // Copier des données dans le buffer actif.
     gl.bufferData(gl.ARRAY_BUFFER, this._arrAttributes, gl.STATIC_DRAW);
 
+    prg.enableVertexAttribFloat32Array(
+        'attPosition', 'attColor', 'attThreshold'
+    );
+/*
     gl.enableVertexAttribArray(prg.attribs.attPosition);
     gl.vertexAttribPointer(
         prg.attribs.attPosition, 3, gl.FLOAT, false, 7 * bpe, 0);
@@ -136,7 +140,7 @@ Faces.prototype.render = function( time, w, h ) {
     gl.enableVertexAttribArray(prg.attribs.attThreshold);
     gl.vertexAttribPointer(
         prg.attribs.attThreshold, 1, gl.FLOAT, false, 7 * bpe, 6 * bpe);
-
+*/
     gl.enable(gl.DEPTH_TEST);
     // Lancer le dessin du triangle composé de 3 points.
     gl.drawArrays(gl.TRIANGLES, 0, this._arrAttributes.length / 7);
