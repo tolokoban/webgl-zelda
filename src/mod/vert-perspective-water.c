@@ -6,8 +6,9 @@ uniform float uniLookZ;
 uniform float uniLookPhi;
 uniform float uniLookTheta;
 uniform float uniLookRho;
+uniform float uniTime;
 
-attribute vec3 attPosition;
+attribute vec2 attPosition;
 attribute float attU;
 attribute float attV;
 attribute float attT;
@@ -21,6 +22,8 @@ const float ZOOM = 100000.0;
 const float PI = 3.141592653589793;
   
 void main() {
+  float sea = -1.0 + sin(uniTime * .001) * .2;
+
   float theta = uniLookTheta;
   float phi = uniLookPhi;
   float rho = uniLookRho;
@@ -49,7 +52,7 @@ void main() {
                         camVX.y, camVY.y, camVZ.y,
                         camVX.z, camVY.z, camVZ.z);
 
-  vec3 pos = cameraMat * (attPosition - vec3(camX, camY, camZ));
+  vec3 pos = cameraMat * (vec3(attPosition, sea) - vec3(camX, camY, camZ));
   float zz = pos.z;
   float xx = pos.x / uniWidth;
   float yy = pos.y / uniHeight;

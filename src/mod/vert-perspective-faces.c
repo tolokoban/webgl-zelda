@@ -13,7 +13,7 @@ attribute vec3 attColor;
 attribute float attThreshold;
 
 varying vec3 varColor;
-varying float varHeight;
+varying vec3 varPosition;
 varying float varThreshold;
 
 const float DEPTH = 270.0;
@@ -58,6 +58,6 @@ void main() {
   gl_Position = vec4(xx * w, yy * w, zz * 0.001, 1.0);
   
   varColor = attColor; 
-  varHeight = attPosition.z;
+  varPosition = attPosition;
   varThreshold = attThreshold;
 }                

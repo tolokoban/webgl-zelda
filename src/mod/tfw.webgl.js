@@ -50,6 +50,7 @@ Renderer.prototype.stop = function() {
 function Program(gl, codes) {
     this.gl = gl;
 
+console.info("[tfw.webgl] codes=...", codes);
     var shaderProgram = gl.createProgram();
     gl.attachShader(shaderProgram, getVertexShader(gl, codes.vert || '//No Vertex Shader'));
     gl.attachShader(shaderProgram, getFragmentShader(gl, codes.frag || '//No Fragment Shader'));

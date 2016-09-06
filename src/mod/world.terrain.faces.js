@@ -10,6 +10,8 @@ var Faces = function( gl ) {
         vert: GLOBAL['vert'],
         frag: GLOBAL['frag']
     });
+    console.info("[world.terrain.faces] this._prg.attribs=...", this._prg.attribs);
+    console.info("[world.terrain.faces] this._prg.uniforms=...", this._prg.uniforms);
 };
 
 /**
@@ -115,6 +117,7 @@ Faces.prototype.render = function( time, w, h ) {
     prg.$uniWidth = w;
     prg.$uniHeight = h;
     prg.$uniTime = time;
+    prg.$uniTimeFrag = time;
     prg.$uniLookX = this.lookX;
     prg.$uniLookY = this.lookY;
     prg.$uniLookZ = this.lookZ;

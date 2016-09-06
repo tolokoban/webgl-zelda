@@ -10,6 +10,8 @@ var Water = function( gl ) {
         vert: GLOBAL['vert'],
         frag: GLOBAL['frag']
     });
+    console.info("[world.terrain.water] this._prg.attribs=...", this._prg.attribs);
+    console.info("[world.terrain.water] this._prg.uniforms=...", this._prg.uniforms);
 };
 
 
@@ -39,7 +41,7 @@ Water.prototype.loadTerrain = function( id ) {
 
     this._cells = cells;
     this._nbPuddles = 7;
-    this._arrAttributes = new Float32Array( 36 * this._nbPuddles );
+    this._arrAttributes = new Float32Array( 30 * this._nbPuddles );
 
     for( var k = 0; k < this._nbPuddles; k++ ) {
         this.randomDisk(k, Math.random() * 3000);
@@ -59,18 +61,17 @@ Water.prototype.randomDisk = function( index, time ) {
     var r = 1 + 2 * Math.random();
     var x = cell[0];
     var y = cell[1];
-    var z = -1;
 
     [
-        // x,  y,     z,  u,  v, time
-        x - r, y - r, z, -1, -1, time,
-        x - r, y + r, z, -1, +1, time,
-        x + r, y + r, z, +1, +1, time,
-        x + r, y + r, z, +1, +1, time,
-        x + r, y - r, z, +1, -1, time,
-        x - r, y - r, z, -1, -1, time
+        // x,  y,      u,  v, time
+        x - r, y - r, -1, -1, time,
+        x - r, y + r, -1, +1, time,
+        x + r, y + r, +1, +1, time,
+        x + r, y + r, +1, +1, time,
+        x + r, y - r, +1, -1, time,
+        x - r, y - r, -1, -1, time
     ].forEach(function (val, idx) {
-        that._arrAttributes[36 * index + idx] = val;
+        that._arrAttributes[30 * index + idx] = val;
     });    
 };
 
@@ -88,6 +89,7 @@ Water.prototype.render = function( time, w, h ) {
     // Les uniforms.
     prg.$uniWidth = w;
     prg.$uniHeight = h;
+    prg.$uniTime = time;
     prg.$uniTimeFrag = time;
     prg.$uniLookX = this.lookX;
     prg.$uniLookY = this.lookY;
@@ -114,7 +116,7 @@ Water.prototype.render = function( time, w, h ) {
     gl.drawArrays(gl.TRIANGLES, 0, this._arrAttributes.length / size);
 
     for( var k = 0; k < this._nbPuddles; k++ ) {
-        if (this._arrAttributes[36 * k + 5] + 1800 < time) {
+        if (this._arrAttributes[30 * k + 4] + 1800 < time) {
             this.randomDisk( k, time + Math.random() * 2000 );
         }
     }
@@ -128,39 +130,6 @@ function height(alti, x, y) {
     var h = row[x];
     if (h < 0) return -2;
     return h;
-}
-
-
-function disk(x, y, time) {
-    var r = 2;
-    var z = -1;
-    return [
-        // x,  y,     z,  u,  v, time
-        x - r, y - r, z, -1, -1, time,
-        x - r, y + r, z, -1, +1, time,
-        x + r, y + r, z, +1, +1, time,
-        x + r, y + r, z, +1, +1, time,
-        x + r, y - r, z, +1, -1, time,
-        x - r, y - r, z, -1, -1, time
-    ];
-}
-
-
-function disk2(arr, offset, x, y, time) {
-    var r = 2;
-    var z = -1;
-
-    [
-        // x,  y,     z,  u,  v, time
-        x - r, y - r, z, -1, -1, time,
-        x - r, y + r, z, -1, +1, time,
-        x + r, y + r, z, +1, +1, time,
-        x + r, y + r, z, +1, +1, time,
-        x + r, y - r, z, +1, -1, time,
-        x - r, y - r, z, -1, -1, time
-    ].forEach(function (val, idx) {
-        arr[36 * offset + idx] = val;
-    });
 }
 
 
