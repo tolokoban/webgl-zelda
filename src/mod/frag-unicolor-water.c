@@ -22,8 +22,8 @@ void main() {
   float r = sqrt(u*u + v*v);
   float r2 = (uniTimeFrag - t) / DUR;
 
-  if (r2 > r && r > 0.8 * r2) {
-    gl_FragColor = vec4(WHITE.rgb, mix(.5, .0, r2));    
+  if ((r2 > r && r > 0.8 * r2) || (.55 * r2 > r*r && r*r > 0.5 * r2)) {
+    gl_FragColor = vec4(WHITE.rgb, mix(.3, .0, r2));    
   } else {
     gl_FragColor = TRANSPARENT;    
   }

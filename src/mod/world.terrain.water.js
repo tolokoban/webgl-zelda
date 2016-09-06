@@ -20,13 +20,31 @@ Water.prototype.loadTerrain = function( id ) {
 
     var arr = [];
     var alti = Levels[id].alti;
-
+    
     var rows = alti.length;
     var cols = alti[0].length;
 
-    arr = disk(0, 0, 3000);
+    // Find cells near water.
+    var cells = [];
+    alti.forEach(function (row, y) {
+        row.forEach(function (z, x) {
+            if (z < 0) return;
+            if (height(alti, x - 1, y) < 0 || height(alti, x + 1, y) < 0
+                || height(alti, x, y - 1) < 0 || height(alti, x, y + 1) < 0 )
+            {
+                cells.push([x + .5, y + .5]);
+            }
+        });
+    });
 
-    this._arrAttributes = new Float32Array( arr );
+    this._cells = cells;
+    this._nbPuddles = 7;
+    this._arrAttributes = new Float32Array( 36 * this._nbPuddles );
+
+    for( var k = 0; k < this._nbPuddles; k++ ) {
+        this.randomDisk(k, Math.random() * 3000);
+    }
+
     this._bufAttributes = this._gl.createBuffer();
 };
 
@@ -34,10 +52,36 @@ Water.prototype.loadTerrain = function( id ) {
 /**
  * @return void
  */
+Water.prototype.randomDisk = function( index, time ) {
+    var that = this;
+
+    var cell = this._cells[Math.floor(Math.random() * this._cells.length)];
+    var r = 1 + 2 * Math.random();
+    var x = cell[0];
+    var y = cell[1];
+    var z = -1;
+
+    [
+        // x,  y,     z,  u,  v, time
+        x - r, y - r, z, -1, -1, time,
+        x - r, y + r, z, -1, +1, time,
+        x + r, y + r, z, +1, +1, time,
+        x + r, y + r, z, +1, +1, time,
+        x + r, y - r, z, +1, -1, time,
+        x - r, y - r, z, -1, -1, time
+    ].forEach(function (val, idx) {
+        that._arrAttributes[36 * index + idx] = val;
+    });    
+};
+
+/**
+ * @return void
+ */
 Water.prototype.render = function( time, w, h ) {
+    if (!this._arrAttributes) return;
+    
     var gl = this._gl;
     var prg = this._prg;
-    var bpe = this._arrAttributes.BYTES_PER_ELEMENT;
 
     prg.use();
 
@@ -62,14 +106,17 @@ Water.prototype.render = function( time, w, h ) {
     );
 
     gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LEQUAL);
     gl.enable(gl.BLEND);
     gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ZERO, gl.ONE);
     gl.blendEquation(gl.FUNC_ADD);
     // Lancer le dessin du triangle composé de 3 points.
     gl.drawArrays(gl.TRIANGLES, 0, this._arrAttributes.length / size);
 
-    if (this._arrAttributes[5] + 1800 < time) {
-        disk2(this._arrAttributes, 0, 0, 0, time + Math.random() * 3000);
+    for( var k = 0; k < this._nbPuddles; k++ ) {
+        if (this._arrAttributes[36 * k + 5] + 1800 < time) {
+            this.randomDisk( k, time + Math.random() * 2000 );
+        }
     }
 };
 
@@ -115,5 +162,16 @@ function disk2(arr, offset, x, y, time) {
         arr[36 * offset + idx] = val;
     });
 }
+
+
+function height(alti, x, y) {
+    if (y < 0 || y >= alti.length) return -2;
+    var row = alti[y];
+    if (x < 0 || x >= row.length) return -2;
+    var h = row[x];
+    if (h < 0) return -2;
+    return h;
+}
+
 
 module.exports = Water;

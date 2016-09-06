@@ -12,11 +12,11 @@ var World = function(gl) {
     this._gl = gl;
 
     // Theta est l'angle à plat ente [0 et 2 PI].
-    this.lookTheta = 0;
+    this.lookTheta = Math.random() * 2 * Math.PI;
     // Phi est l'angle vertical entre [-PI et +PI].
-    this.lookPhi = Math.PI / 4;
+    this.lookPhi = Math.random() * Math.PI / 2;
     // Rho est la distance de la caméra au point regardé.
-    this.lookRho = 10;
+    this.lookRho = 5;
 
     this.worldTerrainFaces = new Faces( gl );
     this.worldTerrainWater = new Water( gl );
