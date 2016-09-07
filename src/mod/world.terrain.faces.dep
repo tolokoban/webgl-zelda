@@ -1,6 +1,8 @@
 {
     "var": {
         "vert": "vert-perspective-faces.c",
-        "frag": "frag-unicolor-faces.c"
+        "frag": "frag-unicolor-faces.c",
+        "vert-ground": "vert-ground.c",
+        "frag-ground": "frag-ground.c"
     }
 }

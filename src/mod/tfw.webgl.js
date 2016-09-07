@@ -29,11 +29,11 @@ Renderer.prototype.start = function(renderingFunction) {
         var that = this;
         var lastTime = 0;
         var rendering = function(time) {
+            that.render( time, time - lastTime );
+            lastTime = time;
             if (that._animationIsOn) {
                 window.requestAnimationFrame( rendering );
             }
-            that.render( time, time - lastTime );
-            lastTime = time;
         };
         window.requestAnimationFrame( rendering );
         this._animationIsOn = true;
@@ -49,8 +49,8 @@ Renderer.prototype.stop = function() {
 
 function Program(gl, codes) {
     this.gl = gl;
+    this._codes = codes;
 
-console.info("[tfw.webgl] codes=...", codes);
     var shaderProgram = gl.createProgram();
     gl.attachShader(shaderProgram, getVertexShader(gl, codes.vert || '//No Vertex Shader'));
     gl.attachShader(shaderProgram, getFragmentShader(gl, codes.frag || '//No Fragment Shader'));
@@ -120,6 +120,10 @@ Program.prototype.enableVertexAttribFloat32Array = function() {
         item = this['_$' + name];
         if( typeof item === 'undefined' ) {
             console.log("Existing attribute are:", this.attribs);
+            console.log("----------------------------------------");
+            console.log(this._codes.vert);
+            console.log("----------------------------------------");
+            console.log(this._codes.frag);
             throw Error('Attribute not defined: "' + name + '"!');
         }
         size += item.size * item.dim;

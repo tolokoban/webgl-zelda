@@ -2,16 +2,19 @@
 
 var Levels = require("levels");
 var WebGL = require("tfw.webgl");
+var VertexArray = require("vertex-array");
 
 
 var Faces = function( gl ) {
     this._gl = gl;
-    this._prg = new WebGL.Program(gl, {
+    this._prgWalls = new WebGL.Program(gl, {
         vert: GLOBAL['vert'],
         frag: GLOBAL['frag']
     });
-    console.info("[world.terrain.faces] this._prg.attribs=...", this._prg.attribs);
-    console.info("[world.terrain.faces] this._prg.uniforms=...", this._prg.uniforms);
+    this._prgGround = new WebGL.Program(gl, {
+        vert: GLOBAL['vert-ground'],
+        frag: GLOBAL['frag-ground']
+    });
 };
 
 /**
@@ -28,28 +31,42 @@ Faces.prototype.loadTerrain = function( id ) {
     var g2 = .15;
     var b2 = 0;
 
-    var arr = [];
+    var arrWalls = [];
     var alti = Levels[id].alti;
 
     var rows = alti.length;
     var cols = alti[0].length;
 
+    // Ground.
+    var ground = new VertexArray();
+    alti.forEach(function (row, y) {
+        row.forEach(function (z, x) {
+            if ( z < 0 ) return;
+            // Top
+            var f1 = flag(alti, x + 0, y + 0, z);
+            var f2 = flag(alti, x + 0, y + 1, z);
+            var f3 = flag(alti, x + 1, y + 1, z);
+            var f4 = flag(alti, x + 1, y + 0, z);
+            ground.add( x + 0, y + 0, z, f1 );
+            ground.add( x + 0, y + 1, z, f2 );
+            ground.add( x + 1, y + 1, z, f3 );
+            ground.add( x + 1, y + 1, z, f3 );
+            ground.add( x + 1, y + 0, z, f4 );
+            ground.add( x + 0, y + 0, z, f1 );
+        });
+    });
+    this._ground = ground.toBufferArrays();
+    //console.info("[world.terrain.faces] this._ground=...", this._ground);
+
+    // Walls.
     alti.forEach(function (row, y) {
         row.forEach(function (z, x) {
             if ( z < 0 ) return;
             var zz;
-            // Top
-            arr = arr.concat(quad(
-                x + 0, y + 0, z,
-                x + 0, y + 1, z,
-                x + 1, y + 1, z,
-                x + 1, y + 0, z,
-                r0, g0, b0, z
-            ));
             // Front
             zz = height(alti, x, y - 1);
             if (zz < z) {
-                arr = arr.concat(quad(
+                arrWalls = arrWalls.concat(quad(
                     x + 0, y + 0, z,
                     x + 1, y + 0, z,
                     x + 1, y + 0, zz,
@@ -60,7 +77,7 @@ Faces.prototype.loadTerrain = function( id ) {
             // Back
             zz = height(alti, x, y + 1);
             if (zz < z) {
-                arr = arr.concat(quad(
+                arrWalls = arrWalls.concat(quad(
                     x + 1, y + 1, z,
                     x + 0, y + 1, z,
                     x + 0, y + 1, zz,
@@ -71,7 +88,7 @@ Faces.prototype.loadTerrain = function( id ) {
             // Left
             zz = height(alti, x - 1, y);
             if (zz < z) {
-                arr = arr.concat(quad(
+                arrWalls = arrWalls.concat(quad(
                     x + 0, y + 0, z,
                     x + 0, y + 0, zz,
                     x + 0, y + 1, zz,
@@ -82,7 +99,7 @@ Faces.prototype.loadTerrain = function( id ) {
             // Right
             zz = height(alti, x + 1, y);
             if (zz < z) {
-                arr = arr.concat(quad(
+                arrWalls = arrWalls.concat(quad(
                     x + 1, y + 0, zz,
                     x + 1, y + 0, z,
                     x + 1, y + 1, z,
@@ -92,10 +109,13 @@ Faces.prototype.loadTerrain = function( id ) {
             }
         });
     });
-    console.info("[world] arr.length / 7=...", arr.length / 7);
+    console.info("[world] arrWalls.length / 7=...", arrWalls.length / 7);
 
-    this._arrAttributes = new Float32Array( arr );
-    this._bufAttributes = this._gl.createBuffer();
+    this._arrWalls = new Float32Array( arrWalls );
+    this._bufWalls = this._gl.createBuffer();
+    
+    this._bufGroundVert = this._gl.createBuffer();
+    this._bufGroundElem = this._gl.createBuffer();
 };
 
 
@@ -103,62 +123,94 @@ Faces.prototype.loadTerrain = function( id ) {
  * @return void
  */
 Faces.prototype.render = function( time, w, h ) {
+    if (!this._arrWalls) return;
+    
     var gl = this._gl;
-    var prg = this._prg;
-    var bpe = this._arrAttributes.BYTES_PER_ELEMENT;
-
-    prg.use();
+    var prgWalls = this._prgWalls;
+    var prgGround = this._prgGround;
 
     // Ne pas afficher les faces qui nous tournent le dos.
     gl.enable(gl.CULL_FACE);
     gl.cullFace(gl.BACK);
+    gl.enable(gl.DEPTH_TEST);
+
+    //----------------------------------------
+    // Walls.
+    prgWalls.use();
 
     // Les uniforms.
-    prg.$uniWidth = w;
-    prg.$uniHeight = h;
-    prg.$uniTime = time;
-    prg.$uniTimeFrag = time;
-    prg.$uniLookX = this.lookX;
-    prg.$uniLookY = this.lookY;
-    prg.$uniLookZ = this.lookZ;
-    prg.$uniLookPhi = this.lookPhi;
-    prg.$uniLookTheta = this.lookTheta;
-    prg.$uniLookRho = this.lookRho;
+    prgWalls.$uniWidth = w;
+    prgWalls.$uniHeight = h;
+    prgWalls.$uniTime = time;
+    prgWalls.$uniTimeFrag = time;
+    prgWalls.$uniLookX = this.lookX;
+    prgWalls.$uniLookY = this.lookY;
+    prgWalls.$uniLookZ = this.lookZ;
+    prgWalls.$uniLookPhi = this.lookPhi;
+    prgWalls.$uniLookTheta = this.lookTheta;
+    prgWalls.$uniLookRho = this.lookRho;
 
     // Définir ce buffer comme le buffer actif.
-    gl.bindBuffer(gl.ARRAY_BUFFER, this._bufAttributes);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this._bufWalls);
     // Copier des données dans le buffer actif.
-    gl.bufferData(gl.ARRAY_BUFFER, this._arrAttributes, gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, this._arrWalls, gl.STATIC_DRAW);
 
-    prg.enableVertexAttribFloat32Array(
+    prgWalls.enableVertexAttribFloat32Array(
         'attPosition', 'attColor', 'attThreshold'
     );
-/*
-    gl.enableVertexAttribArray(prg.attribs.attPosition);
-    gl.vertexAttribPointer(
-        prg.attribs.attPosition, 3, gl.FLOAT, false, 7 * bpe, 0);
-    gl.enableVertexAttribArray(prg.attribs.attColor);
-    gl.vertexAttribPointer(
-        prg.attribs.attColor, 3, gl.FLOAT, false, 7 * bpe, 3 * bpe);
-    gl.enableVertexAttribArray(prg.attribs.attThreshold);
-    gl.vertexAttribPointer(
-        prg.attribs.attThreshold, 1, gl.FLOAT, false, 7 * bpe, 6 * bpe);
-*/
-    gl.enable(gl.DEPTH_TEST);
     // Lancer le dessin du triangle composé de 3 points.
-    gl.drawArrays(gl.TRIANGLES, 0, this._arrAttributes.length / 7);
+    gl.drawArrays(gl.TRIANGLES, 0, this._arrWalls.length / 7);
+
+    //----------------------------------------
+    // Ground.
+    prgGround.use();
+
+    // Les uniforms.
+    prgGround.$uniWidth = w;
+    prgGround.$uniHeight = h;
+    prgGround.$uniTime = time;
+    prgGround.$uniTimeFrag = time;
+    prgGround.$uniLookX = this.lookX;
+    prgGround.$uniLookY = this.lookY;
+    prgGround.$uniLookZ = this.lookZ;
+    prgGround.$uniLookPhi = this.lookPhi;
+    prgGround.$uniLookTheta = this.lookTheta;
+    prgGround.$uniLookRho = this.lookRho;
+
+    // Définir ce buffer comme le buffer actif.
+    gl.bindBuffer(gl.ARRAY_BUFFER, this._bufGroundVert);
+    // Copier des données dans le buffer actif.
+    gl.bufferData(gl.ARRAY_BUFFER, this._ground.vert, gl.STATIC_DRAW);
+
+    prgGround.enableVertexAttribFloat32Array(
+        'attPosition', 'attFlag'
+    );
+    
+    gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this._bufGroundElem );
+    gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, this._ground.elem, gl.STATIC_DRAW );
+    
+    gl.drawElements(gl.TRIANGLES, this._ground.elem.length, gl.UNSIGNED_SHORT, 0);
 };
 
 
 function height(alti, x, y) {
-    if (y < 0 || y >= alti.length) return -2;
+    if (y < 0 || y >= alti.length) return -3;
     var row = alti[y];
-    if (x < 0 || x >= row.length) return -2;
+    if (x < 0 || x >= row.length) return -3;
     var h = row[x];
-    if (h < 0) return -2;
+    if (h < 0) return -3;
     return h;
 }
 
+
+function flag(alti, x, y, z) {
+    var free = 0;
+    if (z != height(alti, x + 0, y + 0)) free = 1;
+    if (z != height(alti, x - 1, y + 0)) free = 1;
+    if (z != height(alti, x - 1, y - 1)) free = 1;
+    if (z != height(alti, x + 0, y - 1)) free = 1;
+    return free;
+}
 
 
 function quad(x1, y1, z1,
