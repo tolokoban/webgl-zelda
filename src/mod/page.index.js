@@ -12,7 +12,9 @@ exports.start = function() {
   });
 
   var draw = new Draw({
-    gl: gl
+    gl: gl,
+    x: 0, y: 0, z: 0,
+    r: 10, lat: Math.PI * 0.3, lng: Math.PI * 0.3
   });
 
   draw.addDrawer( createTerrain( gl ) );
@@ -42,7 +44,9 @@ function createTerrain( gl ) {
     }
   }
 
-  return new Terrain({ gl: gl, vert: vert, elem: elem });
+  return new Terrain({
+    gl: gl, vert: vert, elem: elem
+  });
 }
 
 
