@@ -1,0 +1,6 @@
+{
+  "var": {
+    "vert": "draw.terrain.vert",
+    "frag": "draw.terrain.frag"
+  }
+}
