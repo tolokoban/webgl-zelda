@@ -61,7 +61,7 @@ function render( time ) {
   var z = this.camZ;
   var r = this.camR;
   var lat = this.camLat;
-  var lng = this.camLng;
+  var lng = time * 0.0003; //this.camLng;
   var camera = M.cameraPolar(
     x, y, z,
     r, lat, lng,
@@ -80,7 +80,7 @@ function render( time ) {
   var perspective = M.perspective(
     Math.PI * 0.3,
     gl.canvas.clientWidth / gl.canvas.clientHeight,
-    0.001, 3,
+    0.01, 30,
     this._matPerspective
   );
   var transfo = M.mul( perspective, camera, this._matTransfo );

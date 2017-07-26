@@ -1,5 +1,8 @@
-attribute float attFlag;
 attribute vec3 attPosition;
+attribute vec2 attFlag;
+
+varying vec3 varPosition;
+varying vec2 varFlag;
 
 uniform float uniWidth;
 uniform float uniHeight;
@@ -11,14 +14,11 @@ uniform float uniLookPhi;
 uniform float uniLookTheta;
 uniform float uniLookRho;
 
-varying vec3 varPosition;
-varying float varFlag;
-
 const float DEPTH = 270.0;
 const float ZOOM = 100000.0;
 
 const float PI = 3.141592653589793;
-  
+
 void main() {
   float theta = uniLookTheta;
   float phi = uniLookPhi;
@@ -31,7 +31,7 @@ void main() {
   float sinPhi = sin(phi);      // 0
   float cosTheta = cos(theta);  // 1
   float sinTheta = sin(theta);  // 0
-  
+
   float camX = cosPhi * cosTheta;    // 1
   float camY = cosPhi * sinTheta;    // 0
   float camZ = sinPhi;               // 0
@@ -54,7 +54,7 @@ void main() {
   float yy = pos.y / uniHeight;
   float w = ZOOM / (rho * (DEPTH + zz));
   gl_Position = vec4(xx * w, yy * w, zz * 0.001, 1.0);
-  
+
   varPosition = attPosition;
   varFlag = attFlag;
-}                
+}

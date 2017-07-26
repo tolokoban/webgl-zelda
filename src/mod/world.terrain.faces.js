@@ -47,12 +47,12 @@ Faces.prototype.loadTerrain = function( id ) {
             var f2 = flag(alti, x + 0, y + 1, z);
             var f3 = flag(alti, x + 1, y + 1, z);
             var f4 = flag(alti, x + 1, y + 0, z);
-            ground.add( x + 0, y + 0, z, f1 );
-            ground.add( x + 0, y + 1, z, f2 );
-            ground.add( x + 1, y + 1, z, f3 );
-            ground.add( x + 1, y + 1, z, f3 );
-            ground.add( x + 1, y + 0, z, f4 );
-            ground.add( x + 0, y + 0, z, f1 );
+            ground.add( x + 0, y + 0, z, f1[0], f1[1] );
+            ground.add( x + 0, y + 1, z, f2[0], f2[1] );
+            ground.add( x + 1, y + 1, z, f3[0], f3[1] );
+            ground.add( x + 1, y + 1, z, f3[0], f3[1] );
+            ground.add( x + 1, y + 0, z, f4[0], f4[1] );
+            ground.add( x + 0, y + 0, z, f1[0], f1[1] );
         });
     });
     this._ground = ground.toBufferArrays();
@@ -113,7 +113,7 @@ Faces.prototype.loadTerrain = function( id ) {
 
     this._arrWalls = new Float32Array( arrWalls );
     this._bufWalls = this._gl.createBuffer();
-    
+
     this._bufGroundVert = this._gl.createBuffer();
     this._bufGroundElem = this._gl.createBuffer();
 };
@@ -124,7 +124,7 @@ Faces.prototype.loadTerrain = function( id ) {
  */
 Faces.prototype.render = function( time, w, h ) {
     if (!this._arrWalls) return;
-    
+
     var gl = this._gl;
     var prgWalls = this._prgWalls;
     var prgGround = this._prgGround;
@@ -185,10 +185,10 @@ Faces.prototype.render = function( time, w, h ) {
     prgGround.enableVertexAttribFloat32Array(
         'attPosition', 'attFlag'
     );
-    
+
     gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this._bufGroundElem );
     gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, this._ground.elem, gl.STATIC_DRAW );
-    
+
     gl.drawElements(gl.TRIANGLES, this._ground.elem.length, gl.UNSIGNED_SHORT, 0);
 };
 
@@ -204,12 +204,20 @@ function height(alti, x, y) {
 
 
 function flag(alti, x, y, z) {
-    var free = 0;
-    if (z != height(alti, x + 0, y + 0)) free = 1;
-    if (z != height(alti, x - 1, y + 0)) free = 1;
-    if (z != height(alti, x - 1, y - 1)) free = 1;
-    if (z != height(alti, x + 0, y - 1)) free = 1;
-    return free;
+    var vx = 0;
+    var vy = 0;
+    var bit = 0;
+    if (z != height(alti, x + 0, y + 0)) bit += 1;
+    if (z != height(alti, x - 1, y + 0)) bit += 2;
+    if (z != height(alti, x - 1, y - 1)) bit += 4;
+    if (z != height(alti, x + 0, y - 1)) bit += 8;
+
+    return [
+        [0,0],  [-1,-1], [1,-1], [1,1],
+        [1,1],  [0,0],   [1,0],  [1,-1],
+        [-1,1], [-1,0],  [0,0],  [-1,-1],
+        [0,1],  [-1,1],  [1,1],  [0,0]
+    ][bit];
 }
 
 
@@ -222,7 +230,7 @@ function quad(x1, y1, z1,
     if( typeof h === 'undefined' ) h = 0;
 
     return [
-        x1, y1, z1, r, g, b, h, 
+        x1, y1, z1, r, g, b, h,
         x2, y2, z2, r, g, b, h,
         x3, y3, z3, r, g, b, h,
         x1, y1, z1, r, g, b, h,

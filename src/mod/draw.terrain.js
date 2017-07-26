@@ -1,5 +1,6 @@
 "use strict";
 
+var M = require("webgl.math").m4;
 var Program = require( "webgl.program" );
 
 /**
@@ -36,8 +37,25 @@ Terrain.prototype.draw = function( time, world ) {
   prg.$uniCam3 = world.cam3;
 
   if( !this._debug ) {
-    console.info("[draw.terrain] world=", world);
     this._debug = true;
+    console.info("[draw.terrain] world=", world);
+    var data = this._vertData;
+    var v = new Float32Array( 4 );
+    v[0] = data[0];
+    v[1] = data[1];
+    v[2] = data[2];
+    v[3] = 1;
+    console.log( M.mul( world.transfo, v) );
+    v[0] = data[0 + 9];
+    v[1] = data[1 + 9];
+    v[2] = data[2 + 9];
+    v[3] = 1;
+    console.log( M.mul( world.transfo, v) );
+    v[0] = data[0 + 18];
+    v[1] = data[1 + 18];
+    v[2] = data[2 + 18];
+    v[3] = 1;
+    console.log( M.mul( world.transfo, v) );
   }
   
   // Bind attributes.
