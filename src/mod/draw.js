@@ -4,7 +4,7 @@ var M = require( "webgl.math" ).m4;
 var DB = require( "tfw.data-binding" );
 var Util = require("util");
 var Resize = require( "webgl.resize" );
-var Controls = require("Controls");
+var Controls = require("controls");
 
 
 var clamp = Util.clamp;
