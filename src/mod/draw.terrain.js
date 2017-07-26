@@ -29,12 +29,13 @@ function Terrain( opts ) {
 }
 
 
-Terrain.prototype.draw = function( time, world ) {
+Terrain.prototype.draw = function( world ) {
   var gl = world.gl;
   var prg = this._prg;
 
+  prg.use();
   prg.$uniTransfo = world.transfo;
-  prg.$uniCam3 = world.cam3;
+  prg.$uniCamera = world.camera;
 
   if( !this._debug ) {
     this._debug = true;

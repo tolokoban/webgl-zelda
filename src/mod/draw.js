@@ -2,8 +2,10 @@
 
 var M = require( "webgl.math" ).m4;
 var DB = require( "tfw.data-binding" );
-var Resize = require( "webgl.resize" );
 var Util = require("util");
+var Resize = require( "webgl.resize" );
+var Controls = require("Controls");
+
 
 var clamp = Util.clamp;
 
@@ -19,8 +21,13 @@ function Draw( opts ) {
 
   var rendering = false;
   var r = render.bind( this );
+  var lastTime = -1;
   var anim = function( time ) {
-    r( time );
+    if( lastTime < 0 ) {
+      lastTime = time;
+    }
+    r( time, time - lastTime );
+    lastTime = time;
     if( rendering ) {
       requestAnimationFrame( anim );
     }
@@ -50,8 +57,10 @@ function Draw( opts ) {
 }
 
 
-function render( time ) {
+function render( time, delta ) {
   var world = this._world;
+  world.time = time;
+  world.delta = delta;
   var gl = world.gl;
   
   Resize( gl, 1 );
@@ -60,23 +69,21 @@ function render( time ) {
   var y = this.camY;
   var z = this.camZ;
   var r = this.camR;
+
+  // Utiliser les touches pour déplacer la vue.
+  var speed = delta * .0009;
+  
+  this.camLat += speed * (Controls.Up - Controls.Down);
+  this.camLat = clamp( this.camLat, 0, Math.PI * 0.5 );
+  this.camLng += speed * (Controls.Left - Controls.Right);
+  
   var lat = this.camLat;
-  var lng = time * 0.0003; //this.camLng;
+  var lng = this.camLng;
   var camera = M.cameraPolar(
     x, y, z,
     r, lat, lng,
     this._matCamera
   );
-  var cam3 = this._matCamera3;
-  cam3[ 0 ] = camera[ 0 ];
-  cam3[ 1 ] = camera[ 1 ];
-  cam3[ 2 ] = camera[ 2 ];
-  cam3[ 3 ] = camera[ 4 ];
-  cam3[ 4 ] = camera[ 5 ];
-  cam3[ 5 ] = camera[ 6 ];
-  cam3[ 6 ] = camera[ 8 ];
-  cam3[ 7 ] = camera[ 9 ];
-  cam3[ 8 ] = camera[ 10 ];
   var perspective = M.perspective(
     Math.PI * 0.3,
     gl.canvas.clientWidth / gl.canvas.clientHeight,
@@ -85,7 +92,7 @@ function render( time ) {
   );
   var transfo = M.mul( perspective, camera, this._matTransfo );
   world.transfo = transfo;
-  world.cam3 = cam3;
+  world.camera = camera;
 
   gl.clearColor( 0.2, 0.6, 1.0, 1.0 );
   gl.clear( gl.COLOR_BUFFER_BIT );
@@ -98,13 +105,18 @@ function render( time ) {
   gl.depthFunc( gl.LEQUAL );
 
   this._drawers.forEach(function (drawer) {
-    drawer.draw( time, world );
+    drawer.draw( world );
   });
 }
 
 
-Draw.prototype.addDrawer = function( drawer ) {
-  this._drawers.push( drawer );
+/**
+ * @param {array} drawers... - Drawers to add.
+ */
+Draw.prototype.addDrawer = function() {
+  for( var i = 0 ; i < arguments.length ; i++ ) {
+    this._drawers.push( arguments[i] );    
+  }
 };
 
 

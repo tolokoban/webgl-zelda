@@ -2,6 +2,7 @@
 
 var Draw = require("draw");
 var Terrain = require("draw.terrain");
+var Normals = require("draw.normals");
 
 var GRID_SIZE = 20;
 
@@ -15,33 +16,57 @@ exports.start = function() {
   var draw = new Draw({
     gl: gl,
     camX: GRID_SIZE * 0.5, camY: GRID_SIZE * 0.5, camZ: 0,
-    camR: 10, camLat: Math.PI * 0.4, camLng: 0
+    camR: 15, camLat: Math.PI * 0.4, camLng: 0
   });
 
-  draw.addDrawer( createTerrain( gl ) );
+  var terrainVert = createTerrainVert( GRID_SIZE );
+  var terrainElem = createTerrainElem( GRID_SIZE );
+  draw.addDrawer(
+    new Terrain({ gl: gl, vert: terrainVert, elem: terrainElem })
+  );
+  //draw.addDrawer(
+  //  new Normals({ gl: gl, vert: terrainVert })
+  //);
 };
 
 
 
-function createTerrain( gl ) {
-  var n = GRID_SIZE + 1;
-  var elem = createTerrainElem( GRID_SIZE );
+function createTerrainVert( gridsize ) {
+  var n = gridsize + 1;
   var vert = new Float32Array( n * n * 9 );
   var idx = 0;
   var x, y, z = 0;
-  for( y = 0 ; y <= GRID_SIZE ; y++ ) {
-    for( x = 0 ; x <= GRID_SIZE ; x++ ) {
-      vert[idx + 0] = x;
-      vert[idx + 1] = y;
-      vert[idx + 2] = (x > 0 && x < GRID_SIZE) || (y > 0 && y < GRID_SIZE) ? Math.random() * 2 : 0;
-      vert[idx + 3] = 0;
-      vert[idx + 4] = 0;
-      vert[idx + 5] = 1;
-      vert[idx + 6] = 0;
-      vert[idx + 7] = 1;
-      vert[idx + 8] = 0;
+  var xc, yc;
+  var xx, yy;
+  var radius;
 
-      idx += 9;
+  var loop = 20;
+  while( loop --> 0 ) {
+    idx = 0;
+    xc = Math.random() * n;
+    yc = Math.random() * n;
+    for( y = 0 ; y <= gridsize ; y++ ) {
+      for( x = 0 ; x <= gridsize ; x++ ) {
+        vert[idx + 0] = x;
+        vert[idx + 1] = y;
+
+        xx = x - xc;
+        yy = y - yc;
+        radius = 3.14 * 2 * Math.sqrt( xx*xx + yy*yy ) / n;
+        if( radius < 1 ) {
+          z = 4 * Math.cos( Math.PI * radius * 0.5);
+        }
+        vert[idx + 2] = (vert[idx + 2] + z) * 0.5;
+
+        vert[idx + 3] = 0;
+        vert[idx + 4] = 0;
+        vert[idx + 5] = 1;
+        vert[idx + 6] = 0;
+        vert[idx + 7] = 1;
+        vert[idx + 8] = 0;
+
+        idx += 9;
+      }
     }
   }
 
@@ -49,10 +74,23 @@ function createTerrain( gl ) {
     return 9 * (row * n + col);
   };
 
-  for( y = 1 ; y < GRID_SIZE ; y++ ) {
-    for( x = 1 ; x < GRID_SIZE ; x++ ) {
-      idx = I( x, y );
-      
+  // Smooth
+  loop = 0;
+  while( loop --> 0 ) {
+    for( y = 1 ; y < gridsize ; y++ ) {
+      for( x = 1 ; x < gridsize ; x++ ) {
+        idx = I( x, y );
+        z = vert[idx + 2] * 4;
+        idx = I( x + 1, y );
+        z = vert[idx + 2];
+        idx = I( x - 1, y );
+        z = vert[idx + 2];
+        idx = I( x, y - 1 );
+        z = vert[idx + 2];
+        idx = I( x, y + 1 );
+        z = vert[idx + 2];
+        vert[idx + 2] = z / 8;
+      }
     }
   }
 
@@ -66,8 +104,8 @@ function createTerrain( gl ) {
   var Vx4, Vy4, Vz4;
   var len;
   var vx = 0, vy = 0, vz = 0;
-  for( y = 1 ; y < GRID_SIZE ; y++ ) {
-    for( x = 1 ; x < GRID_SIZE ; x++ ) {
+  for( y = 1 ; y < gridsize ; y++ ) {
+    for( x = 1 ; x < gridsize ; x++ ) {
       idx = I( x, y );
       z = vert[idx + 2];
 
@@ -76,7 +114,7 @@ function createTerrain( gl ) {
       vx1 = vert[idx + 9 + 0] - x;
       vy1 = vert[idx + 9 + 1] - y;
       vz1 = vert[idx + 9 + 2] - z;
-      len = vx1*vx1 + vy1*vy1 + vz1*vz1;
+      len = Math.sqrt(vx1*vx1 + vy1*vy1 + vz1*vz1);
       vx1 /= len;
       vy1 /= len;
       vz1 /= len;
@@ -84,40 +122,69 @@ function createTerrain( gl ) {
       vx2 = vert[idx + 9*n + 0] - x;
       vy2 = vert[idx + 9*n + 1] - y;
       vz2 = vert[idx + 9*n + 2] - z;
-      len = vx2*vx2 + vy2*vy2 + vz2*vz2;
+      len = Math.sqrt(vx2*vx2 + vy2*vy2 + vz2*vz2);
       vx2 /= len;
       vy2 /= len;
       vz2 /= len;
 
       vx3 = vert[idx - 9 + 0] - x;
-      vy3 = vert[idx - 9 + 3] - y;
+      vy3 = vert[idx - 9 + 1] - y;
       vz3 = vert[idx - 9 + 2] - z;
-      len = vx3*vx3 + vy3*vy3 + vz3*vz3;
+      len = Math.sqrt(vx3*vx3 + vy3*vy3 + vz3*vz3);
       vx3 /= len;
       vy3 /= len;
       vz3 /= len;
 
       vx4 = vert[idx - 9*n + 0] - x;
       vy4 = vert[idx - 9*n + 1] - y;
-      vz4 = vert[idx - 9*n + 4] - z;
-      len = vx4*vx4 + vy4*vy4 + vz4*vz4;
+      vz4 = vert[idx - 9*n + 2] - z;
+      len = Math.sqrt(vx4*vx4 + vy4*vy4 + vz4*vz4);
       vx4 /= len;
       vy4 /= len;
       vz4 /= len;
 
       // Produits vectoriels.
-      
+      Vx1 = vy1*vz2 - vz1*vy2;
+      Vy1 = vx2*vz1 - vz2*vy1;
+      Vz1 = vx1*vy2 - vy1*vx2;
+      len = Math.sqrt(Vx1*Vx1 + Vy1*Vy1 + Vz1*Vz1);
+      vx += Vx1 / len;
+      vy += Vy1 / len;
+      vz += Vz1 / len;
 
-      len = vx*vx + vy*vy + vz*vz;
+      Vx2 = vy2*vz3 - vz2*vy3;
+      Vy2 = vx3*vz2 - vz3*vy2;
+      Vz2 = vx2*vy3 - vy2*vx3;
+      len = Math.sqrt(Vx2*Vx2 + Vy2*Vy2 + Vz2*Vz2);
+      vx += Vx2 / len;
+      vy += Vy2 / len;
+      vz += Vz2 / len;
+
+      Vx3 = vy3*vz4 - vz3*vy4;
+      Vy3 = vx4*vz3 - vz4*vy3;
+      Vz3 = vx3*vy4 - vy3*vx4;
+      len = Math.sqrt(Vx3*Vx3 + Vy3*Vy3 + Vz3*Vz3);
+      vx += Vx3 / len;
+      vy += Vy3 / len;
+      vz += Vz3 / len;
+
+      Vx4 = vy4*vz1 - vz4*vy1;
+      Vy4 = vx1*vz4 - vz1*vx4;
+      Vz4 = vx4*vy1 - vy4*vx1;
+      len = Math.sqrt(Vx4*Vx4 + Vy4*Vy4 + Vz4*Vz4);
+      vx += Vx4 / len;
+      vy += Vy4 / len;
+      vz += Vz4 / len;
+
+      // Vecteur normal.
+      len = Math.sqrt(vx*vx + vy*vy + vz*vz);
       vert[idx + 3] = vx / len;
       vert[idx + 4] = vy / len;
       vert[idx + 5] = vz / len;
     }
   }
 
-  return new Terrain({
-    gl: gl, vert: vert, elem: elem
-  });
+  return vert;
 }
 
 

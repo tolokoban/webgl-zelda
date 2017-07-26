@@ -1,0 +1,6 @@
+{
+  "var": {
+    "vert": "draw.normals.vert",
+    "frag": "draw.normals.frag"
+  }
+}
