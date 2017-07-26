@@ -40,7 +40,7 @@ function createTerrainVert( gridsize ) {
   var xx, yy;
   var radius;
 
-  var loop = 20;
+  var loop = 3;
   while( loop --> 0 ) {
     idx = 0;
     xc = Math.random() * n;
@@ -52,11 +52,11 @@ function createTerrainVert( gridsize ) {
 
         xx = x - xc;
         yy = y - yc;
-        radius = 3.14 * 2 * Math.sqrt( xx*xx + yy*yy ) / n;
+        radius = 1.5 * 2 * Math.sqrt( xx*xx + yy*yy ) / n;
         if( radius < 1 ) {
-          z = 4 * Math.cos( Math.PI * radius * 0.5);
+          z = 2 * Math.cos( Math.PI * radius * 0.5);
         }
-        vert[idx + 2] = (vert[idx + 2] + z) * 0.5;
+        vert[idx + 2] += z;
 
         vert[idx + 3] = 0;
         vert[idx + 4] = 0;
