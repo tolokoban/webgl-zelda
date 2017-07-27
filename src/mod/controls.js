@@ -8,7 +8,8 @@
  * tactile, le gamepad, ...
  */
 var ACTIONS = {
-  Up: 0, Down: 0, Left: 0, Right: 0
+  Up: 0, Down: 0, Left: 0, Right: 0,
+  Normal: 0
 };
 
 var ACTIONS_keys = [];
@@ -32,7 +33,8 @@ var KEYS = {
   ArrowUp: 'Up',
   ArrowDown: 'Down',
   ArrowLeft: 'Left',
-  ArrowRight: 'Right'
+  ArrowRight: 'Right',
+  n: 'Normal'
 };
 
 document.addEventListener("keydown", function(evt) {

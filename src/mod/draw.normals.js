@@ -1,6 +1,8 @@
 "use strict";
 
 var Program = require( "webgl.program" );
+var Controls = require("controls");
+
 
 /**
  * @param {Object} opts.gl - Contexte WebGL.
@@ -65,6 +67,8 @@ function Normals( opts ) {
 
 
 Normals.prototype.draw = function( world ) {
+  if( Controls.Normal < 1 ) return;
+  
   var gl = world.gl;
   var prg = this._prg;
 
