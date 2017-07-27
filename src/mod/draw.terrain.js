@@ -54,7 +54,7 @@ Terrain.prototype.draw = function( world ) {
   prg.$tex2 = 2;
   
   // Bind attributes.
-  prg.bindAttribs( this._vertBuff, "attPosition", "attNormal", "attColor" );
+  prg.bindAttribs( this._vertBuff, "attPosition", "attNormal" );
   gl.bindBuffer( gl.ARRAY_BUFFER, this._vertBuff );
   gl.bufferData( gl.ARRAY_BUFFER, this._vertData, gl.STATIC_DRAW );
 
