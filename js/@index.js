@@ -8,7 +8,7 @@
 
  **********************************************************************/
 
-var require = function() {
+window.require = function() {
     var modules = {};
     var definitions = {};
     var nodejs_require = typeof window.require === 'function' ? window.require : null;
@@ -37,7 +37,7 @@ var require = function() {
         if (typeof mod === 'undefined') {
             mod = {exports: {}};
             var exports = mod.exports;
-            body(exports, mod);
+            body(f, mod, exports);
             modules[id] = mod.exports;
             mod = mod.exports;
             //console.log("Module initialized: " + id);
@@ -59,7 +59,7 @@ addListener(
     function() {
         document.body.parentNode.$data = {};
         // Attach controllers.
-        APP = require('app');
+        APP = require('page.index');
 setTimeout(function (){if(typeof APP.start==='function')APP.start()});
 
     }
