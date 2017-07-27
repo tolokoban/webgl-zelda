@@ -9,6 +9,26 @@ exports.clamp = function(v, min, max) {
 };
 
 
+exports.propReadOnly = function( obj, attributes, value ) {
+  var name;
+
+  if( typeof attributes === 'string' ) {
+    name = attributes;
+    attributes = {};
+    attributes[name] = value;
+  }
+
+  for( name in attributes ) {
+    Object.defineProperty( obj, name, {
+      value: attributes[name],
+      writable: false,
+      enumerable: true,
+      configurable: false
+    });
+  }
+};
+
+
   
 module.exports._ = _;
 /**

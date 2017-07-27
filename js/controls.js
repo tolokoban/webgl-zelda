@@ -9,7 +9,8 @@
  * tactile, le gamepad, ...
  */
 var ACTIONS = {
-  Up: 0, Down: 0, Left: 0, Right: 0,
+  Up: 0, Down: 0, 
+  North: 0, South: 0, East: 0, West: 0,
   Normal: 0
 };
 
@@ -31,10 +32,12 @@ ACTIONS_keys.forEach(function (action) {
 
 // Association de touches et d'actions.
 var KEYS = {
-  ArrowUp: 'Up',
-  ArrowDown: 'Down',
-  ArrowLeft: 'Left',
-  ArrowRight: 'Right',
+  '8': 'Up',
+  '2': 'Down',
+  ArrowUp: 'North',
+  ArrowDown: 'South',
+  ArrowLeft: 'West',
+  ArrowRight: 'East',
   n: 'Normal'
 };
 
