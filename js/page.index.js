@@ -31,19 +31,26 @@ exports.start = function() {
     new Terrain({ gl: gl, vert: terrainVert, elem: terrainElem }),
     new Normals({ gl: gl, vert: terrainVert })
   );
+<<<<<<< HEAD
 
 
   new require("terrain")({
     width: 4, height: 4,
     viewW: 3, viewH: 3
   });
+=======
+>>>>>>> 791a53905d3f73e8a55acb73dea958c5b00aedc0
 };
 
 
 
 function createTerrainVert( gridsize ) {
   var n = gridsize + 1;
+<<<<<<< HEAD
   var vert = new Float32Array( n * n * 6 );
+=======
+  var vert = new Float32Array( n * n * 9 );
+>>>>>>> 791a53905d3f73e8a55acb73dea958c5b00aedc0
   var idx = 0;
   var x, y, z = 0;
   var xc, yc;
@@ -71,14 +78,26 @@ function createTerrainVert( gridsize ) {
         vert[idx + 3] = 0;
         vert[idx + 4] = 0;
         vert[idx + 5] = 1;
+<<<<<<< HEAD
 
         idx += 6;
+=======
+        vert[idx + 6] = 0;
+        vert[idx + 7] = 1;
+        vert[idx + 8] = 0;
+
+        idx += 9;
+>>>>>>> 791a53905d3f73e8a55acb73dea958c5b00aedc0
       }
     }
   }
 
   var I = function( col, row ) {
+<<<<<<< HEAD
     return 6 * (Math.floor(row) * n + Math.floor(col));
+=======
+    return 9 * (Math.floor(row) * n + Math.floor(col));
+>>>>>>> 791a53905d3f73e8a55acb73dea958c5b00aedc0
   };
 
   // Smooth
@@ -150,33 +169,57 @@ function createTerrainVert( gridsize ) {
 
       vx = vy = vz = 0;
 
+<<<<<<< HEAD
       vx1 = vert[idx + 6 + 0] - x;
       vy1 = vert[idx + 6 + 1] - y;
       vz1 = vert[idx + 6 + 2] - z;
+=======
+      vx1 = vert[idx + 9 + 0] - x;
+      vy1 = vert[idx + 9 + 1] - y;
+      vz1 = vert[idx + 9 + 2] - z;
+>>>>>>> 791a53905d3f73e8a55acb73dea958c5b00aedc0
       len = Math.sqrt(vx1*vx1 + vy1*vy1 + vz1*vz1);
       vx1 /= len;
       vy1 /= len;
       vz1 /= len;
 
+<<<<<<< HEAD
       vx2 = vert[idx + 6*n + 0] - x;
       vy2 = vert[idx + 6*n + 1] - y;
       vz2 = vert[idx + 6*n + 2] - z;
+=======
+      vx2 = vert[idx + 9*n + 0] - x;
+      vy2 = vert[idx + 9*n + 1] - y;
+      vz2 = vert[idx + 9*n + 2] - z;
+>>>>>>> 791a53905d3f73e8a55acb73dea958c5b00aedc0
       len = Math.sqrt(vx2*vx2 + vy2*vy2 + vz2*vz2);
       vx2 /= len;
       vy2 /= len;
       vz2 /= len;
 
+<<<<<<< HEAD
       vx3 = vert[idx - 6 + 0] - x;
       vy3 = vert[idx - 6 + 1] - y;
       vz3 = vert[idx - 6 + 2] - z;
+=======
+      vx3 = vert[idx - 9 + 0] - x;
+      vy3 = vert[idx - 9 + 1] - y;
+      vz3 = vert[idx - 9 + 2] - z;
+>>>>>>> 791a53905d3f73e8a55acb73dea958c5b00aedc0
       len = Math.sqrt(vx3*vx3 + vy3*vy3 + vz3*vz3);
       vx3 /= len;
       vy3 /= len;
       vz3 /= len;
 
+<<<<<<< HEAD
       vx4 = vert[idx - 6*n + 0] - x;
       vy4 = vert[idx - 6*n + 1] - y;
       vz4 = vert[idx - 6*n + 2] - z;
+=======
+      vx4 = vert[idx - 9*n + 0] - x;
+      vy4 = vert[idx - 9*n + 1] - y;
+      vz4 = vert[idx - 9*n + 2] - z;
+>>>>>>> 791a53905d3f73e8a55acb73dea958c5b00aedc0
       len = Math.sqrt(vx4*vx4 + vy4*vy4 + vz4*vz4);
       vx4 /= len;
       vy4 /= len;
@@ -285,7 +328,10 @@ module.exports._ = _;
  * @see module:util
  * @see module:draw.terrain
  * @see module:draw.normals
+<<<<<<< HEAD
  * @see module:terrain
+=======
+>>>>>>> 791a53905d3f73e8a55acb73dea958c5b00aedc0
 
  */
 });

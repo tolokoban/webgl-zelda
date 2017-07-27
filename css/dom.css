@@ -307,25 +307,34 @@ html.thm-dark svg .fill1 { fill: #000 }
     background-color: #2CA600;
     color: #fff;
 }
+<<<<<<< HEAD
 .thm-bgP > div {
     color: #fff;
 }
+=======
+>>>>>>> 791a53905d3f73e8a55acb73dea958c5b00aedc0
 
 .thm-bgPL {
     background-color: #36CD00;
     color: #000;
 }
+<<<<<<< HEAD
 .thm-bgPL > div {
     color: #000;
 }
+=======
+>>>>>>> 791a53905d3f73e8a55acb73dea958c5b00aedc0
 
 .thm-bgPD {
     background-color: #218000;
     color: #fff;
 }
+<<<<<<< HEAD
 .thm-bgPD > div {
     color: #fff;
 }
+=======
+>>>>>>> 791a53905d3f73e8a55acb73dea958c5b00aedc0
 
 .thm-bgP svg .stroke0, .thm-bgPD svg .stroke0
 { stroke: #fff }
