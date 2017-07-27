@@ -4,8 +4,9 @@ require("gfx");
 
 var Draw = require("draw");
 var Util = require("util");
-var Terrain = require("draw.terrain");
-var Normals = require("draw.normals");
+var Terrain = require("terrain");
+var DrawTerrain = require("draw.terrain");
+var DrawNormals = require("draw.normals");
 
 var clamp = Util.clamp;
 
@@ -18,24 +19,20 @@ exports.start = function() {
   var gl = canvas.getContext('webgl', {
   });
 
-  var draw = new Draw({
-    gl: gl,
-    camX: GRID_SIZE * 0.5, camY: GRID_SIZE * 0.5, camZ: 0,
-    camR: 17, camLat: Math.PI * 0.4, camLng: Math.random()
-  });
-
   var terrainVert = createTerrainVert( GRID_SIZE );
   var terrainElem = createTerrainElem( GRID_SIZE );
-  draw.addDrawer(
-    new Terrain({ gl: gl, vert: terrainVert, elem: terrainElem }),
-    new Normals({ gl: gl, vert: terrainVert })
-  );
+  var terrain = new Terrain();
 
-
-  new require("terrain")({
-    width: 4, height: 4,
-    viewW: 3, viewH: 3
+  var draw = new Draw({
+    gl: gl,
+    camX: 64, camY: 64, camZ: 0,
+    camR: 16, camLat: Math.PI * 0.4, camLng: 0
   });
+
+  draw.addDrawer(
+    new DrawTerrain({ gl: gl, terrain: terrain, vert: terrainVert, elem: terrainElem }),
+    new DrawNormals({ gl: gl, vert: terrainVert })
+  );
 };
 
 

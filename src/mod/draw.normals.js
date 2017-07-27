@@ -29,7 +29,7 @@ function Normals( opts ) {
   if( typeof opts.ny === 'undefined' ) opts.ny = 4;
   if( typeof opts.nz === 'undefined' ) opts.nz = 5;
   if( typeof opts.length === 'undefined' ) opts.length = 1;
-  if( typeof opts.stride === 'undefined' ) opts.stride = 9;
+  if( typeof opts.stride === 'undefined' ) opts.stride = 6;
   
   var gl = opts.gl;
   var idxSrc = 0, idxDst = 0;

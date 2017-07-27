@@ -65,17 +65,25 @@ function render( time, delta ) {
   
   Resize( gl, 1 );
 
+  var speed = delta * .01;
+  this.camY += speed * (Controls.East - Controls.West);
+  this.camY = clamp( this.camY, -8, 255 + 8 );
+  this.camX -= speed * (Controls.North - Controls.South);
+  this.camX = clamp( this.camX, -8, 255 + 8 );
+
   var x = this.camX;
+  world.camX = x;
   var y = this.camY;
+  world.camY = y;
   var z = this.camZ;
+  world.camZ = z;
   var r = this.camR;
 
   // Utiliser les touches pour déplacer la vue.
-  var speed = delta * .0009;
+  speed = delta * .0009;
   
   this.camLat += speed * (Controls.Up - Controls.Down);
   this.camLat = clamp( this.camLat, 0, Math.PI * 0.5 );
-  this.camLng += speed * (Controls.Left - Controls.Right);
   
   var lat = this.camLat;
   var lng = this.camLng;

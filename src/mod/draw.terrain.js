@@ -17,9 +17,11 @@ function Terrain( opts ) {
   var vert = opts.vert;
   var elem = opts.elem;
   
-  this._vertData = vert;
+  this._terrain = opts.terrain;
+  //this._vertData = vert;
+  this._vertData = this._terrain.vert;
   this._vertBuff = gl.createBuffer();
-  this._elemData = elem;
+  //this._elemData = elem;
   this._elemBuff = gl.createBuffer();
 
   this.gl = gl;
@@ -58,11 +60,12 @@ Terrain.prototype.draw = function( world ) {
   gl.bindBuffer( gl.ARRAY_BUFFER, this._vertBuff );
   gl.bufferData( gl.ARRAY_BUFFER, this._vertData, gl.STATIC_DRAW );
 
+  var elems = this._terrain.getElems( world.camX, world.camY );
   gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this._elemBuff );
-  gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, this._elemData, gl.STATIC_DRAW );
+  gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, elems, gl.STATIC_DRAW );
 
   // Draw.
-  gl.drawElements( gl.TRIANGLE_STRIP, this._elemData.length, gl.UNSIGNED_SHORT, 0 );  
+  gl.drawElements( gl.TRIANGLE_STRIP, elems.length, gl.UNSIGNED_SHORT, 0 );  
 };
 
 
