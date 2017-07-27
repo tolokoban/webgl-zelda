@@ -8,7 +8,6 @@ attribute vec3 attColor;
 varying vec3 varPosition;
 varying vec3 varNormal;
 varying vec3 varCamera;
-varying vec2 varUV;
 varying float varSlope;
 
 varying vec3 varColor;
@@ -21,7 +20,6 @@ void main() {
   varCamera = -normalize(uniCamera * pos).xyz;
   varSlope = (1.0 - attNormal.z);
   varSlope *= varSlope;
-  varUV = attPosition.xy * 0.3;
                          
   gl_Position = uniTransfo * pos;
 

@@ -49,6 +49,9 @@ Terrain.prototype.draw = function( world ) {
   gl.activeTexture( gl.TEXTURE1 );
   gl.bindTexture( gl.TEXTURE_2D, this._tex1 );
   prg.$tex1 = 1;
+  gl.activeTexture( gl.TEXTURE2 );
+  gl.bindTexture( gl.TEXTURE_2D, this._tex2 );
+  prg.$tex2 = 2;
   
   // Bind attributes.
   prg.bindAttribs( this._vertBuff, "attPosition", "attNormal", "attColor" );
@@ -102,11 +105,22 @@ function initTextures() {
   gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
   gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
 
+  this._canvas2 = newCanvas("#dc7");
+  this._canvas2.setAttribute("width", 256);
+  this._canvas2.setAttribute("height", 256);
+  this._tex2 = gl.createTexture();
+  gl.bindTexture( gl.TEXTURE_2D, this._tex2 );
+  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT );
+  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT );
+  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
+  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
+
   updateTextures.call( this );
 
   var img0 = new Image();
   img0.src = "css/gfx/grass.jpg";
   img0.onload = function() {
+    console.log("GRASS");
     var ctx = that._canvas0.getContext( '2d' );
     ctx.drawImage( img0, 0, 0, 256, 256 );
     updateTextures.call( that );
@@ -115,26 +129,44 @@ function initTextures() {
   var img1 = new Image();
   img1.src = "css/gfx/rock.jpg";
   img1.onload = function() {
+    console.log("ROCK");
     var ctx = that._canvas1.getContext( '2d' );
     ctx.drawImage( img1, 0, 0, 256, 256 );
     updateTextures.call( that );
   };
   
+  var img2 = new Image();
+  img2.src = "css/gfx/sand.jpg";
+  img2.onload = function() {
+    console.log("SAND");
+    var ctx = that._canvas2.getContext( '2d' );
+    ctx.drawImage( img2, 0, 0, 256, 256 );
+    updateTextures.call( that );
+  };  
 }
 
 
 function updateTextures() {
   var gl = this.gl;
+  
   gl.activeTexture( gl.TEXTURE0 );
   gl.bindTexture( gl.TEXTURE_2D, this._tex0 );
   gl.texImage2D(
     gl.TEXTURE_2D, 0, gl.RGBA,
     gl.RGBA, gl.UNSIGNED_BYTE,
     this._canvas0 );
+  
   gl.activeTexture( gl.TEXTURE1 );
   gl.bindTexture( gl.TEXTURE_2D, this._tex1 );
   gl.texImage2D(
     gl.TEXTURE_2D, 0, gl.RGBA,
     gl.RGBA, gl.UNSIGNED_BYTE,
     this._canvas1 );
+  
+  gl.activeTexture( gl.TEXTURE2 );
+  gl.bindTexture( gl.TEXTURE_2D, this._tex2 );
+  gl.texImage2D(
+    gl.TEXTURE_2D, 0, gl.RGBA,
+    gl.RGBA, gl.UNSIGNED_BYTE,
+    this._canvas2 );
 }
