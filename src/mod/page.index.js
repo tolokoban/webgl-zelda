@@ -1,8 +1,13 @@
 "use strict";
 
+require("gfx");
+
 var Draw = require("draw");
+var Util = require("util");
 var Terrain = require("draw.terrain");
 var Normals = require("draw.normals");
+
+var clamp = Util.clamp;
 
 var GRID_SIZE = 20;
 
@@ -16,17 +21,21 @@ exports.start = function() {
   var draw = new Draw({
     gl: gl,
     camX: GRID_SIZE * 0.5, camY: GRID_SIZE * 0.5, camZ: 0,
-    camR: 15, camLat: Math.PI * 0.4, camLng: 0
+    camR: 17, camLat: Math.PI * 0.4, camLng: Math.random()
   });
 
   var terrainVert = createTerrainVert( GRID_SIZE );
   var terrainElem = createTerrainElem( GRID_SIZE );
   draw.addDrawer(
-    new Terrain({ gl: gl, vert: terrainVert, elem: terrainElem })
+    new Terrain({ gl: gl, vert: terrainVert, elem: terrainElem }),
+    new Normals({ gl: gl, vert: terrainVert })
   );
-  //draw.addDrawer(
-  //  new Normals({ gl: gl, vert: terrainVert })
-  //);
+
+
+  new require("terrain")({
+    width: 4, height: 4,
+    viewW: 3, viewH: 3
+  });
 };
 
 
@@ -40,23 +49,23 @@ function createTerrainVert( gridsize ) {
   var xx, yy;
   var radius;
 
-  var loop = 3;
+  var loop = 20;
   while( loop --> 0 ) {
     idx = 0;
     xc = Math.random() * n;
     yc = Math.random() * n;
     for( y = 0 ; y <= gridsize ; y++ ) {
       for( x = 0 ; x <= gridsize ; x++ ) {
-        vert[idx + 0] = x;
-        vert[idx + 1] = y;
+        vert[idx + 0] = x + (Math.random() - 0.5) * 0.3;
+        vert[idx + 1] = y + (Math.random() - 0.5) * 0.3;
 
         xx = x - xc;
         yy = y - yc;
         radius = 1.5 * 2 * Math.sqrt( xx*xx + yy*yy ) / n;
         if( radius < 1 ) {
-          z = 2 * Math.cos( Math.PI * radius * 0.5);
+          z = 1.8 * Math.cos( Math.PI * radius * 0.5);
         }
-        vert[idx + 2] += z;
+        vert[idx + 2] = (vert[idx + 2] + 3 * z) * 0.25;
 
         vert[idx + 3] = 0;
         vert[idx + 4] = 0;
@@ -71,7 +80,7 @@ function createTerrainVert( gridsize ) {
   }
 
   var I = function( col, row ) {
-    return 9 * (row * n + col);
+    return 9 * (Math.floor(row) * n + Math.floor(col));
   };
 
   // Smooth
@@ -90,6 +99,38 @@ function createTerrainVert( gridsize ) {
         idx = I( x, y + 1 );
         z = vert[idx + 2];
         vert[idx + 2] = z / 8;
+      }
+    }
+  }
+
+  for( y = 1 ; y < n - 3 ; y++ ) {
+    for( x = n/3 ; x < n/3+3 ; x++ ) {
+      idx = I( x, y );
+      xc = x - n * 0.5;
+      yc = y - n * 0.5;
+      vert[idx + 2] += 2.2 + Math.random() * 0.5;
+    }
+  }
+
+  for( y = 0 ; y < n - 2 ; y++ ) {
+    for( x = n/3 - 1 ; x < n/3 + 4 ; x++ ) {
+      idx = I( x, y );
+      vert[idx + 2] += 0.5 + Math.random() * 0.5;
+    }
+  }
+
+  for( y = 0 ; y < n ; y++ ) {
+    for( x = 0 ; x < n ; x++ ) {
+      idx = I( x, y );
+      xx = x - n * 0.5;
+      yy = y - n * 0.5;
+      radius = Math.sqrt( xx*xx + yy*yy );
+      if( radius > n * 0.5 ) {
+        vert[idx + 2] -= 2 + Math.random() * 0.5;
+      } else {
+        radius /= n * 0.5;
+        radius = 1 - radius;
+        vert[idx + 2] += 2.5 * radius + Math.random() * 0.1;
       }
     }
   }
