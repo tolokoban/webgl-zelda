@@ -30,6 +30,12 @@ exports.start = function() {
     new Terrain({ gl: gl, vert: terrainVert, elem: terrainElem }),
     new Normals({ gl: gl, vert: terrainVert })
   );
+
+
+  new require("terrain")({
+    width: 4, height: 4,
+    viewW: 3, viewH: 3
+  });
 };
 
 
