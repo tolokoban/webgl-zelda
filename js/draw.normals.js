@@ -1,7 +1,7 @@
 /** @module draw.normals */require( 'draw.normals', function(require, module, exports) { var _=function(){var D={"en":{},"fr":{}},X=require("$").intl;function _(){return X(D,arguments);}_.all=D;return _}();
  var GLOBAL = {
-  "vert": "uniform mat4 uniTransfo;\nuniform mat3 uniCam3;\n\nattribute vec3 attPosition;\n\nvarying vec3 varPosition;\n\nvoid main() {\n  varPosition = attPosition;\n  vec4 pos = vec4(attPosition, 1);\n  gl_Position = uniTransfo * pos;\n}\n",
-  "frag": "precision mediump float;\n\nvoid main() {\n  gl_FragColor = vec4(1, 0, 0, 1);\n}\n"};
+  "vert": "uniform mat4 uniTransfo;\r\nuniform mat3 uniCam3;\r\n\r\nattribute vec3 attPosition;\r\n\r\nvarying vec3 varPosition;\r\n\r\nvoid main() {\r\n  varPosition = attPosition;\r\n  vec4 pos = vec4(attPosition, 1);\r\n  gl_Position = uniTransfo * pos;\r\n}\r\n",
+  "frag": "precision mediump float;\r\n\r\nvoid main() {\r\n  gl_FragColor = vec4(1, 0, 0, 1);\r\n}\r\n"};
   "use strict";
 
 var Program = require( "webgl.program" );
