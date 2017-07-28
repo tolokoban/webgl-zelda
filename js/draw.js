@@ -14,7 +14,12 @@ var clamp = Util.clamp;
 function Draw( opts ) {
   var that = this;
 
-  // Creating matrix now to prevent memory allocation during animation.
+  // A utiliser pour calculer les FPS.
+  this._lastTime = 0;
+  this._framesCount = 0;
+  
+  // On crée  les matrices  nécessaires à la  caméra et  la projection
+  // pour éviter les allocations mémoire pendant l'animation.
   this._matCamera3 = new Float32Array( 9 );
   this._matCamera = M.matrix();
   this._matPerspective = M.matrix();
@@ -42,10 +47,12 @@ function Draw( opts ) {
   DB.propFloat( this, 'camZ' );
   DB.propFloat( this, 'camR' );
   DB.propFloat( this, 'camA' );
+  DB.propFloat( this, 'fps' );
   DB.prop( this, 'gl' );
   
   DB.extend( {
     play: true,
+    fps: 60,
     camX: 0, camY: 0, camZ: 0,
     camR: 10, camLat: Math.PI * 0.33, camLng: 0,
     gl: null
@@ -59,6 +66,14 @@ function Draw( opts ) {
 
 
 function render( time, delta ) {
+  // Calcul des FPS.
+  this._framesCount++;
+  if (this._framesCount >= 15) {
+    this.fps = Math.floor( 0.5 + 15000 / (time - this._lastTime) );
+    this._framesCount = 0;
+    this._lastTime = time;
+  }
+
   var world = this._world;
   world.time = time;
   world.delta = delta;
@@ -66,17 +81,25 @@ function render( time, delta ) {
   
   Resize( gl, 1 );
 
+  var speed = delta * .01;
+  this.camX += speed * (Controls.East - Controls.West);
+  this.camX = clamp( this.camX, 0, 255 + 8 );
+  this.camY += speed * (Controls.North - Controls.South);
+  this.camY = clamp( this.camY, 0, 255 + 8 );
+
   var x = this.camX;
+  world.camX = x;
   var y = this.camY;
+  world.camY = y;
   var z = this.camZ;
+  world.camZ = z;
   var r = this.camR;
 
   // Utiliser les touches pour déplacer la vue.
-  var speed = delta * .0009;
+  speed = delta * .0009;
   
   this.camLat += speed * (Controls.Up - Controls.Down);
   this.camLat = clamp( this.camLat, 0, Math.PI * 0.5 );
-  this.camLng += speed * (Controls.Left - Controls.Right);
   
   var lat = this.camLat;
   var lng = this.camLng;

@@ -61,6 +61,34 @@ addListener(
         // Attach controllers.
         APP = require('page.index');
 setTimeout(function (){if(typeof APP.start==='function')APP.start()});
-
+var W = require('x-widget');
+        W('mini-map', 'mini-map', {})
+        W('wdg.button12', 'wdg.button', {
+            text: "Déselectionner",
+            wide: "true",
+            type: "secondary"})
+        W('wdg.button13', 'wdg.button', {
+            text: "Mer",
+            value: "sea"})
+        W('wdg.button14', 'wdg.button', {
+            text: "Plage",
+            value: "beach"})
+        W('wdg.button15', 'wdg.button', {
+            text: "Monter",
+            value: "up"})
+        W('wdg.button16', 'wdg.button', {
+            text: "Descendre",
+            value: "down"})
+        W('wdg.button17', 'wdg.button', {
+            text: "Adoucir le relief",
+            value: "smooth",
+            wide: "true",
+            type: "primary"})
+        W.bind('wdg.button12',{"action":{"S":["onUnselect"]}});
+        W.bind('wdg.button13',{"action":{"S":["onBrush"]}});
+        W.bind('wdg.button14',{"action":{"S":["onBrush"]}});
+        W.bind('wdg.button15',{"action":{"S":["onBrush"]}});
+        W.bind('wdg.button16',{"action":{"S":["onBrush"]}});
+        W.bind('wdg.button17',{"action":{"S":["onBrush"]}});
     }
 );

@@ -1,0 +1,19 @@
+.mini-map {
+  position: relative;
+  padding: 0;
+}
+
+.mini-map > canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  transform: scale(1, -1);
+}
+
+.mini-map > canvas:last-child {
+  opacity: .7;
+}

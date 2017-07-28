@@ -1,10 +1,11 @@
 /** @module draw.terrain */require( 'draw.terrain', function(require, module, exports) { var _=function(){var D={"en":{},"fr":{}},X=require("$").intl;function _(){return X(D,arguments);}_.all=D;return _}();
  var GLOBAL = {
   "vert": "uniform mat4 uniTransfo;\r\nuniform mat4 uniCamera;\r\n\r\nattribute vec3 attPosition;\r\nattribute vec3 attNormal;\r\nattribute vec3 attColor;\r\n\r\nvarying vec3 varPosition;\r\nvarying vec3 varNormal;\r\nvarying vec3 varCamera;\r\nvarying float varSlope;\r\n\r\nvarying vec3 varColor;\r\n\r\nvoid main() {\r\n  vec4 pos = vec4(attPosition, 1);\r\n\r\n  varPosition = attPosition;\r\n  varNormal = mat3(uniCamera) * attNormal;\r\n  varCamera = -normalize(uniCamera * pos).xyz;\r\n  varSlope = (1.0 - attNormal.z);\r\n  varSlope *= varSlope;\r\n                         \r\n  gl_Position = uniTransfo * pos;\r\n\r\n  varColor = attColor;\r\n}\r\n",
-  "frag": "precision mediump float;\r\n\r\nvarying vec3 varPosition;\r\nvarying vec3 varNormal;\r\nvarying vec3 varCamera;\r\nvarying float varSlope;\r\n\r\nvarying vec3 varColor;\r\n\r\n// Textures.\r\nuniform sampler2D tex0;  // Grass\r\nuniform sampler2D tex1;  // Rock\r\nuniform sampler2D tex2;  // Sand\r\n\r\nconst vec3 SEA = vec3(0.2, 0.6, 1.0);\r\n\r\n\r\nvoid main() {\r\n  float z = varPosition.z;\r\n  vec2 uv = varPosition.xy * 0.3;\r\n\r\n  vec3 c0 = texture2D(tex0, uv).rgb;\r\n  if( z < 1.5 ) {\r\n    c0 = texture2D(tex2, uv).rgb;\r\n  }\r\n  else if( z < 1.75 ) {\r\n    c0 = mix( texture2D(tex2, uv).rgb, c0, (z - 1.5) * 4.0);\r\n  }\r\n\r\n  vec3 c1 = texture2D(tex1, uv).rgb;\r\n  float k = varSlope * 10.0 - 1.0;\r\n  k = clamp( k + 0.5, 0.0, 1.0 );\r\n  vec3 color = mix(c0, c1, k);\r\n\r\n  vec3 normal = normalize(varNormal);\r\n  vec3 camera = normalize(varCamera);\r\n  float dir = dot(normal, camera);\r\n  dir = clamp(dir, 0.0, 1.0);\r\n  color = mix(vec3(0,0,0), color, dir);\r\n  if( dir < .4 ) {\r\n    color = mix(vec3(1,1,1), color, dir * 2.0 + .2);\r\n  }\r\n\r\n  if( z < 0.0 ) {\r\n    z = clamp( abs(z), 0.0, 1.0 );\r\n    color = mix( color, vec3(0,0,.3), 0.5);\r\n    color = mix( color, SEA, z );\r\n    if( z < 0.1 ) {\r\n      color = mix( color, SEA, 0.5 );\r\n    }\r\n  }\r\n\r\n  gl_FragColor = vec4(color, 1);\r\n}\r\n"};
+  "frag": "precision mediump float;\r\n\r\nvarying vec3 varPosition;\r\nvarying vec3 varNormal;\r\nvarying vec3 varCamera;\r\nvarying float varSlope;\r\n\r\nvarying vec3 varColor;\r\n\r\n// Textures.\r\nuniform sampler2D tex0;  // Grass\r\nuniform sampler2D tex1;  // Rock\r\nuniform sampler2D tex2;  // Sand\r\n\r\nconst vec3 SEA = vec3(0.2, 0.6, 1.0);\r\n\r\n\r\nvoid main() {\r\n  float z = varPosition.z;\r\n  vec2 uv = varPosition.xy * 0.3;\r\n\r\n  vec3 c0 = texture2D(tex0, uv).rgb;\r\n  if( z < 1.5 ) {\r\n    c0 = texture2D(tex2, uv).rgb;\r\n  }\r\n  else if( z < 1.75 ) {\r\n    c0 = mix( texture2D(tex2, uv).rgb, c0, (z - 1.5) * 4.0);\r\n  }\r\n\r\n  vec3 c1 = texture2D(tex1, uv).rgb;\r\n  float k = varSlope * 10.0 - 0.25;\r\n  k = clamp( k + 0.5, 0.0, 1.0 );\r\n  vec3 color = mix(c0, c1, k);\r\n\r\n  vec3 normal = normalize(varNormal);\r\n  vec3 camera = normalize(varCamera);\r\n  float dir = dot(normal, camera);\r\n  dir = clamp(dir, 0.0, 1.0);\r\n  color = mix(vec3(0,0,0), color, dir);\r\n  if( dir < .4 ) {\r\n    color = mix(vec3(1,1,1), color, dir * 2.0 + .2);\r\n  }\r\n\r\n  if( z < 0.0 ) {\r\n    z = clamp( abs(z), 0.0, 1.0 );\r\n    color = mix( color, vec3(0,0,.3), 0.5);\r\n    color = mix( color, SEA, z );\r\n    if( z < 0.1 ) {\r\n      color = mix( color, SEA, 0.5 );\r\n    }\r\n  }\r\n  /*\r\n  // Damier.\r\n  int cell = 0;\r\n  if( mod(varPosition.x, 2.0) < 1.0) {\r\n    cell += 1;\r\n  }\r\n  if( mod(varPosition.y, 2.0) < 1.0) {\r\n    cell += 1;\r\n  }\r\n  if( cell == 1 ) {\r\n    color = mix(color, vec3(1, 0.5, 0), 0.4);\r\n  }  \r\n*/\r\n  gl_FragColor = vec4(color, 1);\r\n}\r\n"};
   "use strict";
 
 var M = require("webgl.math").m4;
+var Util = require("util");
 var Program = require( "webgl.program" );
 
 /**
@@ -21,9 +22,11 @@ function Terrain( opts ) {
   var vert = opts.vert;
   var elem = opts.elem;
   
-  this._vertData = vert;
+  this._terrain = opts.terrain;
+  //this._vertData = vert;
+  this._vertData = this._terrain.vert;
   this._vertBuff = gl.createBuffer();
-  this._elemData = elem;
+  //this._elemData = elem;
   this._elemBuff = gl.createBuffer();
 
   this.gl = gl;
@@ -58,30 +61,20 @@ Terrain.prototype.draw = function( world ) {
   prg.$tex2 = 2;
   
   // Bind attributes.
-  prg.bindAttribs( this._vertBuff, "attPosition", "attNormal", "attColor" );
+  prg.bindAttribs( this._vertBuff, "attPosition", "attNormal" );
   gl.bindBuffer( gl.ARRAY_BUFFER, this._vertBuff );
   gl.bufferData( gl.ARRAY_BUFFER, this._vertData, gl.STATIC_DRAW );
 
+  var elems = this._terrain.getElems( world.camX, world.camY );
   gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this._elemBuff );
-  gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, this._elemData, gl.STATIC_DRAW );
+  gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, elems, gl.STATIC_DRAW );
 
   // Draw.
-  gl.drawElements( gl.TRIANGLE_STRIP, this._elemData.length, gl.UNSIGNED_SHORT, 0 );  
+  gl.drawElements( gl.TRIANGLE_STRIP, elems.length, gl.UNSIGNED_SHORT, 0 );  
 };
 
 
 module.exports = Terrain;
-
-
-function newCanvas(color) {
-  var canvas = document.createElement('canvas');
-  canvas.setAttribute("width", 256);
-  canvas.setAttribute("height", 256);
-  var ctx = canvas.getContext('2d');
-  ctx.fillStyle = color;
-  ctx.fillRect( 0, 0, canvas.width, canvas.height );
-  return canvas;
-}
 
 
 function initTextures() {
@@ -89,64 +82,31 @@ function initTextures() {
 
   var gl = this.gl;  
 
-  this._canvas0 = newCanvas("#0f0");
-  this._canvas0.setAttribute("width", 256);
-  this._canvas0.setAttribute("height", 256);
-  this._tex0 = gl.createTexture();
-  gl.bindTexture( gl.TEXTURE_2D, this._tex0 );
-  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT );
-  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT );
-  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
-  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
+  this._canvas0 = Util.createCanvas("#0f0");
+  this._tex0 = Util.createTextureWrap( gl );
 
-  this._canvas1 = newCanvas("#830");
-  this._canvas1.setAttribute("width", 256);
-  this._canvas1.setAttribute("height", 256);
-  this._tex1 = gl.createTexture();
-  gl.bindTexture( gl.TEXTURE_2D, this._tex1 );
-  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT );
-  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT );
-  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
-  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
+  this._canvas1 = Util.createCanvas("#830");
+  this._tex1 = Util.createTextureWrap( gl );
 
-  this._canvas2 = newCanvas("#dc7");
-  this._canvas2.setAttribute("width", 256);
-  this._canvas2.setAttribute("height", 256);
-  this._tex2 = gl.createTexture();
-  gl.bindTexture( gl.TEXTURE_2D, this._tex2 );
-  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT );
-  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT );
-  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
-  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
+  this._canvas2 = Util.createCanvas("#dc7");
+  this._tex2 = Util.createTextureWrap( gl );
 
   updateTextures.call( this );
 
-  var img0 = new Image();
-  img0.src = "css/gfx/grass.jpg";
-  img0.onload = function() {
-    console.log("GRASS");
+  Util.loadImages({
+    grass: "css/gfx/grass.jpg",
+    rock: "css/gfx/rock.jpg",
+    sand: "css/gfx/sand.jpg"
+  }).then(function( images ) {
     var ctx = that._canvas0.getContext( '2d' );
-    ctx.drawImage( img0, 0, 0, 256, 256 );
-    updateTextures.call( that );
-  };
-  
-  var img1 = new Image();
-  img1.src = "css/gfx/rock.jpg";
-  img1.onload = function() {
-    console.log("ROCK");
-    var ctx = that._canvas1.getContext( '2d' );
-    ctx.drawImage( img1, 0, 0, 256, 256 );
-    updateTextures.call( that );
-  };
-  
-  var img2 = new Image();
-  img2.src = "css/gfx/sand.jpg";
-  img2.onload = function() {
-    console.log("SAND");
-    var ctx = that._canvas2.getContext( '2d' );
-    ctx.drawImage( img2, 0, 0, 256, 256 );
-    updateTextures.call( that );
-  };  
+    ctx.drawImage( images.grass, 0, 0, 256, 256 );
+    ctx = that._canvas1.getContext( '2d' );
+    ctx.drawImage( images.rock, 0, 0, 256, 256 );
+    ctx = that._canvas2.getContext( '2d' );
+    ctx.drawImage( images.sand, 0, 0, 256, 256 );
+    
+    updateTextures.call( that );    
+  });  
 }
 
 
@@ -182,6 +142,7 @@ module.exports._ = _;
  * @module draw.terrain
  * @see module:$
  * @see module:webgl.math
+ * @see module:util
  * @see module:webgl.program
 
  */
