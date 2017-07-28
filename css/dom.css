@@ -306,6 +306,9 @@ html.thm-dark svg .fill1 { fill: #000 }
 .thm-bgP > div {
   color: #fff;
 }
+.thm-bgP > div {
+    color: #fff;
+}
 
 .thm-bgPL {
   background-color: #36CD00;
@@ -314,6 +317,9 @@ html.thm-dark svg .fill1 { fill: #000 }
 .thm-bgPL > div {
   color: #000;
 }
+.thm-bgPL > div {
+    color: #000;
+}
 
 .thm-bgPD {
   background-color: #218000;
@@ -321,6 +327,9 @@ html.thm-dark svg .fill1 { fill: #000 }
 }
 .thm-bgPD > div {
   color: #fff;
+}
+.thm-bgPD > div {
+    color: #fff;
 }
 
 .thm-bgP svg .stroke0, .thm-bgPD svg .stroke0

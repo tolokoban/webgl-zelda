@@ -82,10 +82,17 @@ function render( time, delta ) {
   Resize( gl, 1 );
 
   var speed = delta * .01;
+<<<<<<< HEAD
   this.camX += speed * (Controls.East - Controls.West);
   this.camX = clamp( this.camX, 0, 255 + 8 );
   this.camY += speed * (Controls.North - Controls.South);
   this.camY = clamp( this.camY, 0, 255 + 8 );
+=======
+  this.camY += speed * (Controls.East - Controls.West);
+  this.camY = clamp( this.camY, -8, 255 + 8 );
+  this.camX -= speed * (Controls.North - Controls.South);
+  this.camX = clamp( this.camX, -8, 255 + 8 );
+>>>>>>> ee8d1783b7f991c40a44f20f686a8fa749995877
 
   var x = this.camX;
   world.camX = x;

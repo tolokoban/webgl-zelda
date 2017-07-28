@@ -29,6 +29,7 @@ exports.propReadOnly = function( obj, attributes, value ) {
 };
 
 
+<<<<<<< HEAD
 /**
  * Converti des degrés en radians.
  */
@@ -94,6 +95,8 @@ exports.createTextureWrap = function( gl ) {
 };
 
 
+=======
+>>>>>>> ee8d1783b7f991c40a44f20f686a8fa749995877
   
 module.exports._ = _;
 /**

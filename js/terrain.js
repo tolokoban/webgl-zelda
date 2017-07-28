@@ -9,23 +9,37 @@
 "use strict";
 
 var Util = require("util");
+<<<<<<< HEAD
 var Controls = require("controls");
+=======
+>>>>>>> ee8d1783b7f991c40a44f20f686a8fa749995877
 
 var STRIDE = 6;
 
 function Terrain(opts) {
   if( typeof opts === 'undefined' ) opts = {};
+<<<<<<< HEAD
   if( typeof opts.width === 'undefined' ) opts.width = 64;
   if( typeof opts.height === 'undefined' ) opts.height = 64;
   if( typeof opts.viewW === 'undefined' ) opts.viewW = 40;
   if( typeof opts.viewH === 'undefined' ) opts.viewH = 30;
+=======
+  if( typeof opts.width === 'undefined' ) opts.width = 256;
+  if( typeof opts.height === 'undefined' ) opts.height = 256;
+  if( typeof opts.viewW === 'undefined' ) opts.viewW = 30;
+  if( typeof opts.viewH === 'undefined' ) opts.viewH = 50;
+>>>>>>> ee8d1783b7f991c40a44f20f686a8fa749995877
 
   this._opts = opts;
 
   var w = opts.width;
   var h = opts.height;
   Util.propReadOnly(this, {
+<<<<<<< HEAD
     width: w, height: h, STRIDE: STRIDE
+=======
+    width: w, height: h
+>>>>>>> ee8d1783b7f991c40a44f20f686a8fa749995877
   });
 
   this.index = function( x, y ) {
@@ -50,6 +64,7 @@ function Terrain(opts) {
     this.vert = new Float32Array( w * h * STRIDE );
     snapToGrid.call( this );
     addNoise.call( this, -10, 14 );
+<<<<<<< HEAD
     Terrain.prototype.smooth.call( this );
   } else {
     this.vert = opts.vert;
@@ -66,6 +81,24 @@ function Terrain(opts) {
     if( Controls.Debug ) {
       console.info("[terrain] x, y, col, row=", x, y, col, row);
     }
+=======
+    smooth.call( this );
+  } else {
+    this.vert = opts.vert;
+  }
+  computeNormals.call( this );
+
+  var grid = createElems.call( this, w, h, opts.viewW, opts.viewH );
+  this.getElems = function( x, y ) {
+    x -= grid.cornerX + grid.halfVW * 0.5;
+    if( x < 0 ) x = 0;
+    y -= grid.cornerY + grid.halfVH * 0.5;
+    if( y < 0 ) y = 0;
+
+    var col = Util.clamp( Math.floor( x / grid.halfVW ), 0, grid.cols - 1 );
+    var row = Util.clamp( Math.floor( y / grid.halfVH ), 0, grid.rows - 1 );
+    var idx = row * grid.cols + col;
+>>>>>>> ee8d1783b7f991c40a44f20f686a8fa749995877
     return grid.elems[idx];
   };
 }
@@ -113,7 +146,12 @@ var snapToGrid = function( indexes ) {
   }
 };
 
+<<<<<<< HEAD
 Terrain.prototype.smooth = function( loops, indexes ) {
+=======
+Terrain.prototype.smooth = smooth;
+var smooth = function( loops, indexes ) {
+>>>>>>> ee8d1783b7f991c40a44f20f686a8fa749995877
   if( typeof loops !== 'number' ) loops = 2;
   if( !Array.isArray( indexes ) ) indexes = this._indexes;
 
@@ -143,7 +181,12 @@ Terrain.prototype.smooth = function( loops, indexes ) {
   }
 };
 
+<<<<<<< HEAD
 Terrain.prototype.computeNormals = function( indexes ) {
+=======
+Terrain.prototype.computeNormals = computeNormals;
+var computeNormals = function( indexes ) {
+>>>>>>> ee8d1783b7f991c40a44f20f686a8fa749995877
   if( !Array.isArray( indexes ) ) indexes = this._indexes;
 
   var k, idx, col, row, coords;
@@ -247,6 +290,7 @@ Terrain.prototype.computeNormals = function( indexes ) {
     vert[idx + 3] = vx / len;
     vert[idx + 4] = vy / len;
     vert[idx + 5] = vz / len;
+<<<<<<< HEAD
   }
 };
 
@@ -303,14 +347,58 @@ function createElems( terrainW, terrainH, viewW, viewH ) {
       elems.push(
         boustrophedon.call(
           this, x, y, viewW, viewH, terrainW, terrainH
+=======
+
+    // DEBUG.
+/*
+    vert[idx + 3] = 0;
+    vert[idx + 4] = 0;
+    vert[idx + 5] = 1;
+*/
+  }
+};
+
+
+/**
+ * @param {number} TW - Nombre de vertex dans la largeur du terrain.
+ * @param {number} TH - Nombre de vertex dans la hauteur du terrain.
+ * @param {number} VW - Nombre de vertex dans la largeur de l'espace visible.
+ * @param {number} VH - Nombre de vertex dans la hauteur de l'espace visible.
+ */
+function createElems( TW, TH, VW, VH ) {
+  var halfVW = Math.ceil( VW * 0.5 );
+  var cols = Math.ceil( TW / halfVW );
+  var cornerX = TW - halfVW * cols;
+  var halfVH = Math.ceil( VH * 0.5 );
+  var rows = Math.ceil( TH / halfVH );
+  var cornerY = TH - halfVH * rows;
+
+  var elems = [];
+  var col, row;
+  for( row = 0 ; row < rows ; row++ ) {
+    for( col = 0 ; col < cols ; col++ ) {
+      elems.push(
+        boustrophedon.call(
+          this,
+          cornerX + col * halfVW,
+          cornerY + row * halfVH,
+          VW, VH, TW, TH
+>>>>>>> ee8d1783b7f991c40a44f20f686a8fa749995877
         )
       );
     }
   }
 
   return {
+<<<<<<< HEAD
     shiftX: shiftX,
     shiftY: shiftY,
+=======
+    cornerX: cornerX,
+    cornerY: cornerY,
+    halfVW: halfVW,
+    halfVH: halfVH,
+>>>>>>> ee8d1783b7f991c40a44f20f686a8fa749995877
     cols: cols,
     rows: rows,
     elems: elems
@@ -382,7 +470,10 @@ module.exports._ = _;
  * @module terrain
  * @see module:$
  * @see module:util
+<<<<<<< HEAD
  * @see module:controls
+=======
+>>>>>>> ee8d1783b7f991c40a44f20f686a8fa749995877
 
  */
 });
