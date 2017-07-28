@@ -63,32 +63,32 @@ addListener(
 setTimeout(function (){if(typeof APP.start==='function')APP.start()});
 var W = require('x-widget');
         W('mini-map', 'mini-map', {})
-        W('wdg.button12', 'wdg.button', {
+        W('wdg.button0', 'wdg.button', {
             text: "Déselectionner",
             wide: "true",
             type: "secondary"})
-        W('wdg.button13', 'wdg.button', {
+        W('wdg.button1', 'wdg.button', {
             text: "Mer",
             value: "sea"})
-        W('wdg.button14', 'wdg.button', {
+        W('wdg.button2', 'wdg.button', {
             text: "Plage",
             value: "beach"})
-        W('wdg.button15', 'wdg.button', {
+        W('wdg.button3', 'wdg.button', {
             text: "Monter",
             value: "up"})
-        W('wdg.button16', 'wdg.button', {
+        W('wdg.button4', 'wdg.button', {
             text: "Descendre",
             value: "down"})
-        W('wdg.button17', 'wdg.button', {
+        W('wdg.button5', 'wdg.button', {
             text: "Adoucir le relief",
             value: "smooth",
             wide: "true",
             type: "primary"})
-        W.bind('wdg.button12',{"action":{"S":["onUnselect"]}});
-        W.bind('wdg.button13',{"action":{"S":["onBrush"]}});
-        W.bind('wdg.button14',{"action":{"S":["onBrush"]}});
-        W.bind('wdg.button15',{"action":{"S":["onBrush"]}});
-        W.bind('wdg.button16',{"action":{"S":["onBrush"]}});
-        W.bind('wdg.button17',{"action":{"S":["onBrush"]}});
+        W.bind('wdg.button0',{"action":{"S":["onUnselect"]}});
+        W.bind('wdg.button1',{"action":{"S":["onBrush"]}});
+        W.bind('wdg.button2',{"action":{"S":["onBrush"]}});
+        W.bind('wdg.button3',{"action":{"S":["onBrush"]}});
+        W.bind('wdg.button4',{"action":{"S":["onBrush"]}});
+        W.bind('wdg.button5',{"action":{"S":["onBrush"]}});
     }
 );
