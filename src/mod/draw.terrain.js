@@ -1,6 +1,7 @@
 "use strict";
 
 var M = require("webgl.math").m4;
+var Util = require("util");
 var Program = require( "webgl.program" );
 
 /**
@@ -72,80 +73,36 @@ Terrain.prototype.draw = function( world ) {
 module.exports = Terrain;
 
 
-function newCanvas(color) {
-  var canvas = document.createElement('canvas');
-  canvas.setAttribute("width", 256);
-  canvas.setAttribute("height", 256);
-  var ctx = canvas.getContext('2d');
-  ctx.fillStyle = color;
-  ctx.fillRect( 0, 0, canvas.width, canvas.height );
-  return canvas;
-}
-
-
 function initTextures() {
   var that = this;
 
   var gl = this.gl;  
 
-  this._canvas0 = newCanvas("#0f0");
-  this._canvas0.setAttribute("width", 256);
-  this._canvas0.setAttribute("height", 256);
-  this._tex0 = gl.createTexture();
-  gl.bindTexture( gl.TEXTURE_2D, this._tex0 );
-  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT );
-  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT );
-  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
-  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
+  this._canvas0 = Util.createCanvas("#0f0");
+  this._tex0 = Util.createTextureWrap( gl );
 
-  this._canvas1 = newCanvas("#830");
-  this._canvas1.setAttribute("width", 256);
-  this._canvas1.setAttribute("height", 256);
-  this._tex1 = gl.createTexture();
-  gl.bindTexture( gl.TEXTURE_2D, this._tex1 );
-  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT );
-  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT );
-  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
-  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
+  this._canvas1 = Util.createCanvas("#830");
+  this._tex1 = Util.createTextureWrap( gl );
 
-  this._canvas2 = newCanvas("#dc7");
-  this._canvas2.setAttribute("width", 256);
-  this._canvas2.setAttribute("height", 256);
-  this._tex2 = gl.createTexture();
-  gl.bindTexture( gl.TEXTURE_2D, this._tex2 );
-  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT );
-  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT );
-  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
-  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
+  this._canvas2 = Util.createCanvas("#dc7");
+  this._tex2 = Util.createTextureWrap( gl );
 
   updateTextures.call( this );
 
-  var img0 = new Image();
-  img0.src = "css/gfx/grass.jpg";
-  img0.onload = function() {
-    console.log("GRASS");
+  Util.loadImages({
+    grass: "css/gfx/grass.jpg",
+    rock: "css/gfx/rock.jpg",
+    sand: "css/gfx/sand.jpg"
+  }).then(function( images ) {
     var ctx = that._canvas0.getContext( '2d' );
-    ctx.drawImage( img0, 0, 0, 256, 256 );
-    updateTextures.call( that );
-  };
-  
-  var img1 = new Image();
-  img1.src = "css/gfx/rock.jpg";
-  img1.onload = function() {
-    console.log("ROCK");
-    var ctx = that._canvas1.getContext( '2d' );
-    ctx.drawImage( img1, 0, 0, 256, 256 );
-    updateTextures.call( that );
-  };
-  
-  var img2 = new Image();
-  img2.src = "css/gfx/sand.jpg";
-  img2.onload = function() {
-    console.log("SAND");
-    var ctx = that._canvas2.getContext( '2d' );
-    ctx.drawImage( img2, 0, 0, 256, 256 );
-    updateTextures.call( that );
-  };  
+    ctx.drawImage( images.grass, 0, 0, 256, 256 );
+    ctx = that._canvas1.getContext( '2d' );
+    ctx.drawImage( images.rock, 0, 0, 256, 256 );
+    ctx = that._canvas2.getContext( '2d' );
+    ctx.drawImage( images.sand, 0, 0, 256, 256 );
+    
+    updateTextures.call( that );    
+  });  
 }
 
 

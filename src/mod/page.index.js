@@ -1,7 +1,11 @@
 "use strict";
 
 require("gfx");
+require("font.mystery-quest");
 
+var $ = require("dom");
+var W = require("x-widget").getById;
+var DB = require("tfw.data-binding");
 var Draw = require("draw");
 var Util = require("util");
 var Terrain = require("terrain");
@@ -12,260 +16,116 @@ var clamp = Util.clamp;
 
 var GRID_SIZE = 20;
 
-exports.start = function() {
-  var canvas = document.createElement('canvas');
-  document.body.appendChild(canvas);
+var G = {};
 
+exports.start = function() {
+  var canvas = document.getElementById('canvas');
   var gl = canvas.getContext('webgl', {
+    antialias: false
   });
 
-  var terrainVert = createTerrainVert( GRID_SIZE );
-  var terrainElem = createTerrainElem( GRID_SIZE );
-  var terrain = new Terrain();
+  var terrain = new Terrain({
+    width: 80, height: 50
+  });
+  W('mini-map').terrain = terrain;
 
   var draw = new Draw({
     gl: gl,
-    camX: 64, camY: 64, camZ: 0,
-    camR: 16, camLat: Math.PI * 0.4, camLng: 0
+    camX: terrain.width / 2,
+    camY: terrain.height / 2,
+    camZ: 0,
+    camR: 16, camLat: Util.rad( 60 ), camLng: 0
   });
 
+  var fps = $('fps');
+  DB.bind( draw, 'fps', function(v) {
+    fps.textContent = v;
+  });
+
+  var drawTerrain = new DrawTerrain({ gl: gl, terrain: terrain });
   draw.addDrawer(
-    new DrawTerrain({ gl: gl, terrain: terrain, vert: terrainVert, elem: terrainElem }),
-    new DrawNormals({ gl: gl, vert: terrainVert })
+    drawTerrain,
+    new DrawNormals({ gl: gl, vert: terrain.vert })
   );
+
+  G.miniMap = W("mini-map");
+  G.terrain = terrain;
+  G.drawTerrain = drawTerrain;
 };
 
 
+exports.onUnselect = function() {
+  G.miniMap.clearSelection();
+};
 
-function createTerrainVert( gridsize ) {
-  var n = gridsize + 1;
-  var vert = new Float32Array( n * n * 6 );
-  var idx = 0;
-  var x, y, z = 0;
-  var xc, yc;
-  var xx, yy;
-  var radius;
 
-  var loop = 20;
-  while( loop --> 0 ) {
-    idx = 0;
-    xc = Math.random() * n;
-    yc = Math.random() * n;
-    for( y = 0 ; y <= gridsize ; y++ ) {
-      for( x = 0 ; x <= gridsize ; x++ ) {
-        vert[idx + 0] = x + (Math.random() - 0.5) * 0.3;
-        vert[idx + 1] = y + (Math.random() - 0.5) * 0.3;
-
-        xx = x - xc;
-        yy = y - yc;
-        radius = 1.5 * 2 * Math.sqrt( xx*xx + yy*yy ) / n;
-        if( radius < 1 ) {
-          z = 1.8 * Math.cos( Math.PI * radius * 0.5);
-        }
-        vert[idx + 2] = (vert[idx + 2] + 3 * z) * 0.25;
-
-        vert[idx + 3] = 0;
-        vert[idx + 4] = 0;
-        vert[idx + 5] = 1;
-
-        idx += 6;
-      }
-    }
+var BRUSHES = {
+  sea: {
+    source: 0,
+    min: -2.1,
+    max: -1.9
+  },
+  beach: {
+    source: 0,
+    min: 0,
+    max: 1.5
+  },
+  up: {
+    source: 1,
+    min: 0.45,
+    max: 0.55
+  },
+  down: {
+    source: 1,
+    min: -0.55,
+    max: -0.45
   }
-
-  var I = function( col, row ) {
-    return 6 * (Math.floor(row) * n + Math.floor(col));
-  };
-
-  // Smooth
-  loop = 0;
-  while( loop --> 0 ) {
-    for( y = 1 ; y < gridsize ; y++ ) {
-      for( x = 1 ; x < gridsize ; x++ ) {
-        idx = I( x, y );
-        z = vert[idx + 2] * 4;
-        idx = I( x + 1, y );
-        z = vert[idx + 2];
-        idx = I( x - 1, y );
-        z = vert[idx + 2];
-        idx = I( x, y - 1 );
-        z = vert[idx + 2];
-        idx = I( x, y + 1 );
-        z = vert[idx + 2];
-        vert[idx + 2] = z / 8;
-      }
-    }
-  }
-
-  for( y = 1 ; y < n - 3 ; y++ ) {
-    for( x = n/3 ; x < n/3+3 ; x++ ) {
-      idx = I( x, y );
-      xc = x - n * 0.5;
-      yc = y - n * 0.5;
-      vert[idx + 2] += 2.2 + Math.random() * 0.5;
-    }
-  }
-
-  for( y = 0 ; y < n - 2 ; y++ ) {
-    for( x = n/3 - 1 ; x < n/3 + 4 ; x++ ) {
-      idx = I( x, y );
-      vert[idx + 2] += 0.5 + Math.random() * 0.5;
-    }
-  }
-
-  for( y = 0 ; y < n ; y++ ) {
-    for( x = 0 ; x < n ; x++ ) {
-      idx = I( x, y );
-      xx = x - n * 0.5;
-      yy = y - n * 0.5;
-      radius = Math.sqrt( xx*xx + yy*yy );
-      if( radius > n * 0.5 ) {
-        vert[idx + 2] -= 2 + Math.random() * 0.5;
-      } else {
-        radius /= n * 0.5;
-        radius = 1 - radius;
-        vert[idx + 2] += 2.5 * radius + Math.random() * 0.1;
-      }
-    }
-  }
-
-  var vx1, vy1, vz1;
-  var vx2, vy2, vz2;
-  var vx3, vy3, vz3;
-  var vx4, vy4, vz4;
-  var Vx1, Vy1, Vz1;
-  var Vx2, Vy2, Vz2;
-  var Vx3, Vy3, Vz3;
-  var Vx4, Vy4, Vz4;
-  var len;
-  var vx = 0, vy = 0, vz = 0;
-  for( y = 1 ; y < gridsize ; y++ ) {
-    for( x = 1 ; x < gridsize ; x++ ) {
-      idx = I( x, y );
-      z = vert[idx + 2];
-
-      vx = vy = vz = 0;
-
-      vx1 = vert[idx + 6 + 0] - x;
-      vy1 = vert[idx + 6 + 1] - y;
-      vz1 = vert[idx + 6 + 2] - z;
-      len = Math.sqrt(vx1*vx1 + vy1*vy1 + vz1*vz1);
-      vx1 /= len;
-      vy1 /= len;
-      vz1 /= len;
-
-      vx2 = vert[idx + 6*n + 0] - x;
-      vy2 = vert[idx + 6*n + 1] - y;
-      vz2 = vert[idx + 6*n + 2] - z;
-      len = Math.sqrt(vx2*vx2 + vy2*vy2 + vz2*vz2);
-      vx2 /= len;
-      vy2 /= len;
-      vz2 /= len;
-
-      vx3 = vert[idx - 6 + 0] - x;
-      vy3 = vert[idx - 6 + 1] - y;
-      vz3 = vert[idx - 6 + 2] - z;
-      len = Math.sqrt(vx3*vx3 + vy3*vy3 + vz3*vz3);
-      vx3 /= len;
-      vy3 /= len;
-      vz3 /= len;
-
-      vx4 = vert[idx - 6*n + 0] - x;
-      vy4 = vert[idx - 6*n + 1] - y;
-      vz4 = vert[idx - 6*n + 2] - z;
-      len = Math.sqrt(vx4*vx4 + vy4*vy4 + vz4*vz4);
-      vx4 /= len;
-      vy4 /= len;
-      vz4 /= len;
-
-      // Produits vectoriels.
-      Vx1 = vy1*vz2 - vz1*vy2;
-      Vy1 = vx2*vz1 - vz2*vy1;
-      Vz1 = vx1*vy2 - vy1*vx2;
-      len = Math.sqrt(Vx1*Vx1 + Vy1*Vy1 + Vz1*Vz1);
-      vx += Vx1 / len;
-      vy += Vy1 / len;
-      vz += Vz1 / len;
-
-      Vx2 = vy2*vz3 - vz2*vy3;
-      Vy2 = vx3*vz2 - vz3*vy2;
-      Vz2 = vx2*vy3 - vy2*vx3;
-      len = Math.sqrt(Vx2*Vx2 + Vy2*Vy2 + Vz2*Vz2);
-      vx += Vx2 / len;
-      vy += Vy2 / len;
-      vz += Vz2 / len;
-
-      Vx3 = vy3*vz4 - vz3*vy4;
-      Vy3 = vx4*vz3 - vz4*vy3;
-      Vz3 = vx3*vy4 - vy3*vx4;
-      len = Math.sqrt(Vx3*Vx3 + Vy3*Vy3 + Vz3*Vz3);
-      vx += Vx3 / len;
-      vy += Vy3 / len;
-      vz += Vz3 / len;
-
-      Vx4 = vy4*vz1 - vz4*vy1;
-      Vy4 = vx1*vz4 - vz1*vx4;
-      Vz4 = vx4*vy1 - vy4*vx1;
-      len = Math.sqrt(Vx4*Vx4 + Vy4*Vy4 + Vz4*Vz4);
-      vx += Vx4 / len;
-      vy += Vy4 / len;
-      vz += Vz4 / len;
-
-      // Vecteur normal.
-      len = Math.sqrt(vx*vx + vy*vy + vz*vz);
-      vert[idx + 3] = vx / len;
-      vert[idx + 4] = vy / len;
-      vert[idx + 5] = vz / len;
-    }
-  }
-
-  return vert;
 }
 
-
-/**
- * Because we will use `drawElement` and `TRIANGLE_STRIP`, we need to order indexes.
- * We will walk through the plateau in boustrophedon mode.
- */
-function createTerrainElem( gridsize ) {
-  var data = [ 0 ];
-  // `gridsize` is the number of cells, `n` is the number of vertex.
-  var n = gridsize + 1;
-  var I = function ( r, c ) {
-    return n * r + c;
-  };
-  var row, col;
-  for ( row = 0; row < gridsize; row++ ) {
-    for ( col = 0; col < gridsize; col++ ) {
-      // 0---B---D
-      // +  /+  /+
-      // + / + / +
-      // +/  +/  +
-      // A---C---+
-      // Let push A, then B, then C, then D, ...
-      data.push(
-        I( row + 1, col ),
-        I( row, col + 1 )
-      );
-    }
-    data.push( I( row + 1, n - 1 ) );
-    // If there is a row left, let's go backward.
-    row++;
-    if ( row >= gridsize ) break;
-    for ( col = gridsize; col > 0; col-- ) {
-      // D---B---0
-      // +\  +\  +
-      // + \ + \ +
-      // +  \+  \+
-      // +---C---A
-      // Let push A, then B, then C, then D, ...
-      data.push(
-        I( row + 1, col ),
-        I( row, col - 1 )
-      );
-    }
-    data.push( I( row + 1, 0 ) );
+exports.onBrush = function( id ) {
+  if( id === 'smooth' ) {
+    smooth();
+    return;
   }
 
-  return new Uint16Array( data );
+  var brush = BRUSHES[id];
+  if( !brush ) return;
+
+  var selection = G.miniMap.getSelection();
+  var vert = G.terrain.vert;
+  var idxA = 2, idxB = 3;
+  var z, alpha;
+  var loops = selection.length >> 2;
+
+  while( loops --> 0 ) {
+    alpha = selection[idxB] / 255;
+    if( alpha > 0 ) {
+      z = vert[idxA] * brush.source;
+      z += alpha * (brush.min + Math.random() * (brush.max - brush.min));
+      vert[idxA] = z;
+    }
+    idxA += G.terrain.STRIDE;
+    idxB += 4;
+  }
+
+  G.terrain.computeNormals();
+  G.miniMap.update();
+};
+
+
+function smooth() {
+  var selection = G.miniMap.getSelection();
+  var idxB = 3, idx = 0, indexes = [];
+  var loops = selection.length >> 2;
+
+  while( loops --> 0 ) {
+    if( selection[idxB] > 0 ) {
+      indexes.push( idx );
+    }
+    idxB += 4;
+    idx++;
+  }
+
+  G.terrain.smooth( 1, indexes );
+  G.miniMap.update();  
 }

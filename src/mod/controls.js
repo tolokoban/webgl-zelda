@@ -10,7 +10,8 @@
 var ACTIONS = {
   Up: 0, Down: 0, 
   North: 0, South: 0, East: 0, West: 0,
-  Normal: 0
+  Normal: 0,
+  Debug: 0
 };
 
 var ACTIONS_keys = [];
@@ -37,7 +38,8 @@ var KEYS = {
   ArrowDown: 'South',
   ArrowLeft: 'West',
   ArrowRight: 'East',
-  n: 'Normal'
+  n: 'Normal',
+  d: 'Debug'
 };
 
 document.addEventListener("keydown", function(evt) {

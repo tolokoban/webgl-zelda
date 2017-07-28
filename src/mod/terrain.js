@@ -8,22 +8,23 @@
 "use strict";
 
 var Util = require("util");
+var Controls = require("controls");
 
 var STRIDE = 6;
 
 function Terrain(opts) {
   if( typeof opts === 'undefined' ) opts = {};
-  if( typeof opts.width === 'undefined' ) opts.width = 256;
-  if( typeof opts.height === 'undefined' ) opts.height = 256;
-  if( typeof opts.viewW === 'undefined' ) opts.viewW = 30;
-  if( typeof opts.viewH === 'undefined' ) opts.viewH = 50;
+  if( typeof opts.width === 'undefined' ) opts.width = 64;
+  if( typeof opts.height === 'undefined' ) opts.height = 64;
+  if( typeof opts.viewW === 'undefined' ) opts.viewW = 40;
+  if( typeof opts.viewH === 'undefined' ) opts.viewH = 30;
 
   this._opts = opts;
 
   var w = opts.width;
   var h = opts.height;
   Util.propReadOnly(this, {
-    width: w, height: h
+    width: w, height: h, STRIDE: STRIDE
   });
 
   this.index = function( x, y ) {
@@ -48,22 +49,22 @@ function Terrain(opts) {
     this.vert = new Float32Array( w * h * STRIDE );
     snapToGrid.call( this );
     addNoise.call( this, -10, 14 );
-    smooth.call( this );
+    Terrain.prototype.smooth.call( this );
   } else {
     this.vert = opts.vert;
   }
-  computeNormals.call( this );
+  setBorder.call( this );
+  Terrain.prototype.computeNormals.call( this );
 
   var grid = createElems.call( this, w, h, opts.viewW, opts.viewH );
   this.getElems = function( x, y ) {
-    x -= grid.cornerX + grid.halfVW * 0.5;
-    if( x < 0 ) x = 0;
-    y -= grid.cornerY + grid.halfVH * 0.5;
-    if( y < 0 ) y = 0;
-
-    var col = Util.clamp( Math.floor( x / grid.halfVW ), 0, grid.cols - 1 );
-    var row = Util.clamp( Math.floor( y / grid.halfVH ), 0, grid.rows - 1 );
+    y += opts.viewH * 0.1;
+    var col = Util.clamp( Math.floor( x / grid.shiftX ), 0, grid.cols - 1 );
+    var row = Util.clamp( Math.floor( y / grid.shiftY ), 0, grid.rows - 1 );
     var idx = row * grid.cols + col;
+    if( Controls.Debug ) {
+      console.info("[terrain] x, y, col, row=", x, y, col, row);
+    }
     return grid.elems[idx];
   };
 }
@@ -111,8 +112,7 @@ var snapToGrid = function( indexes ) {
   }
 };
 
-Terrain.prototype.smooth = smooth;
-var smooth = function( loops, indexes ) {
+Terrain.prototype.smooth = function( loops, indexes ) {
   if( typeof loops !== 'number' ) loops = 2;
   if( !Array.isArray( indexes ) ) indexes = this._indexes;
 
@@ -142,8 +142,7 @@ var smooth = function( loops, indexes ) {
   }
 };
 
-Terrain.prototype.computeNormals = computeNormals;
-var computeNormals = function( indexes ) {
+Terrain.prototype.computeNormals = function( indexes ) {
   if( !Array.isArray( indexes ) ) indexes = this._indexes;
 
   var k, idx, col, row, coords;
@@ -247,51 +246,70 @@ var computeNormals = function( indexes ) {
     vert[idx + 3] = vx / len;
     vert[idx + 4] = vy / len;
     vert[idx + 5] = vz / len;
-
-    // DEBUG.
-/*
-    vert[idx + 3] = 0;
-    vert[idx + 4] = 0;
-    vert[idx + 5] = 1;
-*/
   }
 };
 
+/**
+ * Force les altitudes à -2 sur le carré extérieur.
+ */
+function setBorder() {
+  var idxA = 0;
+  var idxB = STRIDE * this.index( 0, this.height - 1 );
+  var loops = this.width;
+  while( loops --> 0 ) {
+    this.vert[idxA + 2] = -2;
+    this.vert[idxB + 2] = -2;
+    idxA += STRIDE;
+    idxB += STRIDE;
+  }
+
+  var offset = STRIDE * this.width;
+  idxA = offset;
+  idxB = STRIDE * this.index( this.width - 1, 1 );
+  
+  loops = this.heigh - 2;
+  while( loops --> 0 ) {
+    this.vert[idxA + 2] = -2;
+    this.vert[idxB + 2] = -2;
+    idxA += offset;
+    idxB += offset;
+  }
+}
 
 /**
- * @param {number} TW - Nombre de vertex dans la largeur du terrain.
- * @param {number} TH - Nombre de vertex dans la hauteur du terrain.
- * @param {number} VW - Nombre de vertex dans la largeur de l'espace visible.
- * @param {number} VH - Nombre de vertex dans la hauteur de l'espace visible.
+ * @param {number} terrainW - Nombre de vertex dans la largeur du terrain.
+ * @param {number} terrainH - Nombre de vertex dans la hauteur du terrain.
+ * @param {number} viewW - Nombre de vertex dans la largeur de l'espace visible.
+ * @param {number} viewH - Nombre de vertex dans la hauteur de l'espace visible.
  */
-function createElems( TW, TH, VW, VH ) {
-  var halfVW = Math.ceil( VW * 0.5 );
-  var cols = Math.ceil( TW / halfVW );
-  var cornerX = TW - halfVW * cols;
-  var halfVH = Math.ceil( VH * 0.5 );
-  var rows = Math.ceil( TH / halfVH );
-  var cornerY = TH - halfVH * rows;
+function createElems( terrainW, terrainH, viewW, viewH ) {
+  var shiftX = 8;
+  var shiftY = 8;
+  
+  var halfViewW = viewW >> 1;
+  var cols = Math.ceil( terrainW / shiftX );
+  var cornerX = (shiftX >> 1) - halfViewW;
+  var halfViewH = viewH >> 1;
+  var rows = Math.ceil( terrainH / shiftY );
+  var cornerY = (shiftY >> 1) - halfViewH;
 
   var elems = [];
-  var col, row;
+  var col, row, x, y;
   for( row = 0 ; row < rows ; row++ ) {
     for( col = 0 ; col < cols ; col++ ) {
+      x = cornerX + col * shiftX;
+      y = cornerY + row * shiftY;
       elems.push(
         boustrophedon.call(
-          this,
-          cornerX + col * halfVW,
-          cornerY + row * halfVH,
-          VW, VH, TW, TH
+          this, x, y, viewW, viewH, terrainW, terrainH
         )
       );
     }
   }
 
   return {
-    cornerX: cornerX,
-    cornerY: cornerY,
-    halfVW: halfVW,
-    halfVH: halfVH,
+    shiftX: shiftX,
+    shiftY: shiftY,
     cols: cols,
     rows: rows,
     elems: elems

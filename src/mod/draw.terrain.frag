@@ -28,7 +28,7 @@ void main() {
   }
 
   vec3 c1 = texture2D(tex1, uv).rgb;
-  float k = varSlope * 10.0 - 1.0;
+  float k = varSlope * 10.0 - 0.25;
   k = clamp( k + 0.5, 0.0, 1.0 );
   vec3 color = mix(c0, c1, k);
 
@@ -49,6 +49,18 @@ void main() {
       color = mix( color, SEA, 0.5 );
     }
   }
-
+  /*
+  // Damier.
+  int cell = 0;
+  if( mod(varPosition.x, 2.0) < 1.0) {
+    cell += 1;
+  }
+  if( mod(varPosition.y, 2.0) < 1.0) {
+    cell += 1;
+  }
+  if( cell == 1 ) {
+    color = mix(color, vec3(1, 0.5, 0), 0.4);
+  }  
+*/
   gl_FragColor = vec4(color, 1);
 }

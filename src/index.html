@@ -1,1 +1,21 @@
-<x-html app='page.index' title="Lonely Knight"></x-html>
+<x-html app='page.index' title="Lonely Knight">
+    <canvas id="canvas"></canvas>
+    <nav class="thm-bg1">
+        <header class="thm-ele12 thm-bgPD">
+            <div id="title">Lonely Knight</div>
+            <div id="fps"></div>
+            <div>fps</div>
+        </header>
+        <section>
+            <center>
+                <x-widget id="mini-map" name="mini-map" />
+            </center>
+            <wdg:button $text="Déselectionner" $wide="true" $type="secondary" slot:action="onUnselect" />
+            <wdg:button $text="Mer" slot:action="onBrush" $value="sea" />
+            <wdg:button $text="Plage" slot:action="onBrush" $value="beach" />
+            <wdg:button $text="Monter" slot:action="onBrush" $value="up" />
+            <wdg:button $text="Descendre" slot:action="onBrush" $value="down" />
+            <wdg:button $text="Adoucir le relief" slot:action="onBrush" $value="smooth" $wide="true" $type="primary"/>
+        </section>
+    </nav>
+</x-html>
