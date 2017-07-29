@@ -25,7 +25,7 @@ exports.start = function() {
   });
 
   var terrain = new Terrain({
-    width: 80, height: 50
+    width: 160, height: 100
   });
   W('mini-map').terrain = terrain;
 
@@ -49,6 +49,10 @@ exports.start = function() {
   );
 
   G.miniMap = W("mini-map");
+  G.miniMap.eventMove.add(function(x, y) {
+    draw.camX = x;
+    draw.camY = y;
+  });
   G.terrain = terrain;
   G.drawTerrain = drawTerrain;
 };

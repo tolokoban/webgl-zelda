@@ -3,9 +3,8 @@ precision mediump float;
 varying vec3 varPosition;
 varying vec3 varNormal;
 varying vec3 varCamera;
-varying float varSlope;
 
-varying vec3 varColor;
+varying float varSlope;
 
 // Textures.
 uniform sampler2D tex0;  // Grass
@@ -14,25 +13,42 @@ uniform sampler2D tex2;  // Sand
 
 const vec3 SEA = vec3(0.2, 0.6, 1.0);
 
+const float SAND_Z = 1.5;
+const float GRASS_Z = 1.8;
+
+const float ROCK_MAX = cos(radians( 25.0 )); // Au dessus, c'est de l'herbe.
+const float ROCK_MIN = cos(radians( 40.0 )); // En dessous, c'est du rock.
+
 
 void main() {
   float z = varPosition.z;
   vec2 uv = varPosition.xy * 0.3;
-
-  vec3 c0 = texture2D(tex0, uv).rgb;
-  if( z < 1.5 ) {
-    c0 = texture2D(tex2, uv).rgb;
-  }
-  else if( z < 1.75 ) {
-    c0 = mix( texture2D(tex2, uv).rgb, c0, (z - 1.5) * 4.0);
-  }
-
-  vec3 c1 = texture2D(tex1, uv).rgb;
-  float k = varSlope * 10.0 - 0.25;
-  k = clamp( k + 0.5, 0.0, 1.0 );
-  vec3 color = mix(c0, c1, k);
-
+  float alpha;
   vec3 normal = normalize(varNormal);
+  float slope = varSlope;
+  vec3 color;
+
+  if( slope < ROCK_MIN ) {
+    // Du pur rocher.
+    color = texture2D(tex1, uv).rgb;
+  } else {    
+    if( z < SAND_Z ) {
+      color = texture2D(tex2, uv).rgb;
+    }
+    else if( z > GRASS_Z ) {
+      color = texture2D(tex0, uv).rgb;
+    }
+    else {
+      alpha = (z - SAND_Z) / (GRASS_Z - SAND_Z);
+      color = mix( texture2D(tex2, uv).rgb, texture2D(tex0, uv).rgb, alpha);
+    }
+    if( slope < ROCK_MAX ) {
+      // Petit mix avec du rocher.
+      alpha = (slope - ROCK_MIN) / (ROCK_MAX - ROCK_MIN);
+      color = mix( texture2D(tex1, uv).rgb, color, alpha);
+    }
+  }
+
   vec3 camera = normalize(varCamera);
   float dir = dot(normal, camera);
   dir = clamp(dir, 0.0, 1.0);
@@ -49,18 +65,6 @@ void main() {
       color = mix( color, SEA, 0.5 );
     }
   }
-  /*
-  // Damier.
-  int cell = 0;
-  if( mod(varPosition.x, 2.0) < 1.0) {
-    cell += 1;
-  }
-  if( mod(varPosition.y, 2.0) < 1.0) {
-    cell += 1;
-  }
-  if( cell == 1 ) {
-    color = mix(color, vec3(1, 0.5, 0), 0.4);
-  }  
-*/
+
   gl_FragColor = vec4(color, 1);
 }

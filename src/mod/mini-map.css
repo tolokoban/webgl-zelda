@@ -1,6 +1,21 @@
 .mini-map {
   position: relative;
   padding: 0;
+  cursor: cross;
+  overflow: hidden;
+}
+
+.mini-map > div.cursor {
+  position: absolute;
+  border-radius: 100%;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  background: rgba(255,255,255,.5);
+  box-shadow: 0 0 2px 1px #000;
+  margin: 0;
+  padding: 0;
 }
 
 .mini-map > canvas {
@@ -15,5 +30,5 @@
 }
 
 .mini-map > canvas:last-child {
-  opacity: .7;
+  opacity: 1;
 }
