@@ -1,4 +1,4 @@
-exports.config={"name":"\"webgl-zelda\"","description":"\"A webgl clone of an old version of Zelda\"","author":"\"tolokoban\"","version":"\"0.0.2\"","major":"0","minor":"0","revision":"2","date":"2017-07-27T06:27:57.000Z","consts":{}};
+exports.config={"name":"\"webgl-zelda\"","description":"\"A webgl clone of an old version of Zelda\"","author":"\"tolokoban\"","version":"\"0.0.3\"","major":"0","minor":"0","revision":"3","date":"2017-08-31T12:41:14.000Z","consts":{}};
 var currentLang = null;
 exports.lang = function(lang) {
     if (lang === undefined) {
